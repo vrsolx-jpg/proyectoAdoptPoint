@@ -12,15 +12,29 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var preferences: android.content.SharedPreferences
+    private lateinit var auth: FirebaseAuth
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +66,31 @@ class LoginActivity : AppCompatActivity() {
             "adopt_point_preferences",
             Context.MODE_PRIVATE
         )
+
+        // Firebase Auth
+        auth = Firebase.auth
+
+        // Google Sign In
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        googleSignInLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                try {
+                    val account = task.getResult(ApiException::class.java)!!
+                    firebaseAuthWithGoogle(account.idToken!!)
+                } catch (e: ApiException) {
+                    Toast.makeText(this, "Error en Google Sign-In: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
         // ==========================================
         // REFERENCIAS
@@ -111,6 +150,11 @@ class LoginActivity : AppCompatActivity() {
                 R.id.btnIniciarSesion
             )
 
+        val btnGoogle =
+            findViewById<MaterialButton>(
+                R.id.btnGoogle
+            )
+
         val tvIrRegistro =
             findViewById<TextView>(
                 R.id.tvIrRegistro
@@ -139,6 +183,7 @@ class LoginActivity : AppCompatActivity() {
             etPass,
             cbRecordarme,
             btnIniciar,
+            btnGoogle,
             tvIrRegistro
         )
 
@@ -291,6 +336,11 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
+        btnGoogle.setOnClickListener {
+            val signInIntent = googleSignInClient.signInIntent
+            googleSignInLauncher.launch(signInIntent)
+        }
+
         // ==========================================
         // IR A REGISTRO
         // ==========================================
@@ -320,6 +370,31 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val user = auth.currentUser
+                    if (user != null) {
+                        preferences.edit()
+                            .putBoolean("is_logged_in", true)
+                            .putString("username", user.displayName ?: "Usuario")
+                            .putString("email", user.email)
+                            .apply()
+
+                        Toast.makeText(this, "¡Bienvenido, ${user.displayName}!", Toast.LENGTH_SHORT).show()
+
+                        val intent = Intent(this, HomeActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+                } else {
+                    Toast.makeText(this, "Autenticación fallida.", Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
     // ==========================================
     // APLICAR TEMA
     // ==========================================
@@ -337,6 +412,7 @@ class LoginActivity : AppCompatActivity() {
         etPass: TextInputEditText,
         cbRecordarme: CheckBox,
         btnIniciar: Button,
+        btnGoogle: MaterialButton,
         tvIrRegistro: TextView
     ) {
 
@@ -423,6 +499,25 @@ class LoginActivity : AppCompatActivity() {
             btnIniciar.setTextColor(
                 Color.parseColor("#4D311B")
             )
+
+            btnGoogle.backgroundTintList =
+                ColorStateList.valueOf(
+                    Color.parseColor("#4D311B")
+                )
+
+            btnGoogle.setTextColor(
+                Color.parseColor("#F1E9D2")
+            )
+
+            btnGoogle.strokeColor =
+                ColorStateList.valueOf(
+                    Color.parseColor("#F1E9D2")
+                )
+
+            btnGoogle.iconTint =
+                ColorStateList.valueOf(
+                    Color.parseColor("#F1E9D2")
+                )
 
         } else {
 
@@ -541,6 +636,25 @@ class LoginActivity : AppCompatActivity() {
             btnIniciar.setTextColor(
                 Color.parseColor("#F1E9D2")
             )
+
+            btnGoogle.backgroundTintList =
+                ColorStateList.valueOf(
+                    Color.parseColor("#FFFFFF")
+                )
+
+            btnGoogle.setTextColor(
+                Color.parseColor("#5D4037")
+            )
+
+            btnGoogle.strokeColor =
+                ColorStateList.valueOf(
+                    Color.parseColor("#5D4037")
+                )
+
+            btnGoogle.iconTint =
+                ColorStateList.valueOf(
+                    Color.parseColor("#5D4037")
+                )
         }
     }
 }

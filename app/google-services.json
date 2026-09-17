@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "629633798601",
+    "project_id": "adoptpoint",
+    "storage_bucket": "adoptpoint.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629633798601:android:48b14a3f39da9362e51818",
+        "android_client_info": {
+          "package_name": "com.example.proyecto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgIx1yfopjVCs8TrmIR_9HpxkAMNs8lC0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

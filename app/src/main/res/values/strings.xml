@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">proyecto</string>
+    <string name="default_web_client_id">629633798601-dummy.apps.googleusercontent.com</string>
 </resources>

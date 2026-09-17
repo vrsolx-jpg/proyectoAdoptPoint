@@ -105,6 +105,21 @@
             android:text="Iniciar sesión"
             android:textColor="@android:color/white" />
 
+        <!-- Botón Continuar con Google -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGoogle"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#FFFFFF"
+            android:fontFamily="@font/gasoek_one"
+            android:text="Continuar con Google"
+            android:textColor="#5D4037"
+            app:icon="@android:drawable/ic_menu_info_details"
+            app:iconGravity="textStart"
+            app:iconTint="#5D4037"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
         <!-- Ir a Registro -->
         <TextView
             android:id="@+id/tvIrRegistro"
