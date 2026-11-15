@@ -1,0 +1,127 @@
+<ion-content [fullscreen]="true" class="registro">
+  <button class="boton-volver" type="button" routerLink="/acceso" aria-label="Volver">
+    <span>←</span>
+  </button>
+
+  <main class="pantalla">
+    <section class="tarjeta" aria-labelledby="titulo-registro">
+      <div class="ilustracion">
+        <img src="assets/img/animaleslogin.png" alt="Animales asomándose a la tarjeta">
+      </div>
+
+      <div class="contenido">
+        <p class="etiqueta">ÚNETE A ADOPTPOINT</p>
+        <h1 id="titulo-registro">Crea tu cuenta</h1>
+        <p class="descripcion">Forma parte de una comunidad que cambia vidas.</p>
+
+        <form #formRegistro="ngForm" (ngSubmit)="registrar()" class="formulario">
+          <ion-item class="campo">
+            <ion-label position="stacked">Nombre completo</ion-label>
+            <ion-input
+              name="nombre"
+              [(ngModel)]="nombre"
+              (ionInput)="filtrarNombre($event)"
+              placeholder="Escribe tu nombre"
+              autocomplete="name"
+              minlength="2"
+              maxlength="60"
+              required>
+            </ion-input>
+          </ion-item>
+          <p class="error" *ngIf="nombre && !nombreValido()">Usa solo letras, espacios, tildes y guiones.</p>
+
+          <ion-item class="campo">
+            <ion-label position="stacked">Correo electrónico</ion-label>
+            <ion-input
+              type="email"
+              name="correo"
+              [(ngModel)]="correo"
+              placeholder="ejemplo@correo.com"
+              autocomplete="email"
+              maxlength="254"
+              required>
+            </ion-input>
+          </ion-item>
+          <p class="error" *ngIf="correo && !correoValido()">Escribe un correo válido.</p>
+
+          <ion-item class="campo">
+            <ion-label position="stacked">Contraseña</ion-label>
+            <ion-input
+              [type]="mostrarContrasena ? 'text' : 'password'"
+              name="contrasena"
+              [(ngModel)]="contrasena"
+              placeholder="Crea una contraseña"
+              autocomplete="new-password"
+              minlength="8"
+              maxlength="64"
+              required>
+            </ion-input>
+            <ion-button
+              slot="end"
+              fill="clear"
+              type="button"
+              class="boton-ojo"
+              (click)="mostrarContrasena = !mostrarContrasena"
+              [attr.aria-label]="mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <ion-icon
+                [name]="mostrarContrasena ? 'eye-off-outline' : 'eye-outline'"
+                slot="icon-only">
+              </ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <p class="ayuda">Mínimo 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.</p>
+
+          <ion-item class="campo">
+            <ion-label position="stacked">Confirmar contraseña</ion-label>
+            <ion-input
+              [type]="mostrarConfirmacion ? 'text' : 'password'"
+              name="confirmacion"
+              [(ngModel)]="confirmacion"
+              placeholder="Repite tu contraseña"
+              autocomplete="new-password"
+              required>
+            </ion-input>
+            <ion-button
+              slot="end"
+              fill="clear"
+              type="button"
+              class="boton-ojo"
+              (click)="mostrarConfirmacion = !mostrarConfirmacion"
+              [attr.aria-label]="mostrarConfirmacion ? 'Ocultar confirmación' : 'Mostrar confirmación'">
+              <ion-icon
+                [name]="mostrarConfirmacion ? 'eye-off-outline' : 'eye-outline'"
+                slot="icon-only">
+              </ion-icon>
+            </ion-button>
+          </ion-item>
+          <p class="error" *ngIf="confirmacion && contrasena !== confirmacion">Las contraseñas no coinciden.</p>
+
+          <p class="mensaje" *ngIf="mensaje" role="alert">{{ mensaje }}</p>
+          <label class="terminos">
+            <ion-checkbox
+              name="aceptaTerminos"
+              [(ngModel)]="aceptaTerminos"
+              required>
+            </ion-checkbox>
+            <span>Acepto los <a href="/terminos" target="_blank" rel="noopener">términos y condiciones</a>.</span>
+          </label>
+          <ion-button expand="block" type="submit" class="boton-principal">Registrarme</ion-button>
+
+          <div class="separador"><span>o continúa con</span></div>
+          <ion-button
+            expand="block"
+            type="button"
+            fill="outline"
+            class="boton-google"
+            (click)="registrarConGoogle()">
+            <span class="google-g" aria-hidden="true">G</span>
+            Continuar con Google
+          </ion-button>
+        </form>
+
+        <p class="pie">¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión</a></p>
+      </div>
+    </section>
+  </main>
+</ion-content>

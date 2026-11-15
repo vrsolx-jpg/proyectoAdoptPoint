@@ -1,0 +1,28 @@
+<ion-content [fullscreen]="true" class="acceso">
+  <main class="pantalla">
+    <button class="boton-volver" type="button" routerLink="/tabs/tab1" aria-label="Volver">
+      <span>←</span>
+    </button>
+
+    <section class="tarjeta bienvenida" aria-labelledby="titulo-acceso">
+      <div class="ilustracion">
+        <img src="assets/img/animaleslogin.png" alt="Animales listos para encontrar un hogar">
+      </div>
+
+      <div class="contenido">
+        <p class="etiqueta">ADOPTPOINT</p>
+        <h1 id="titulo-acceso">Encuentra a tu<br>mejor amigo</h1>
+        <p class="descripcion">Un hogar lleno de amor puede cambiar la vida de una mascota.</p>
+
+        <div class="acciones">
+          <ion-button expand="block" class="boton-principal" routerLink="/login">
+            Iniciar sesión
+          </ion-button>
+          <ion-button expand="block" fill="outline" class="boton-secundario" routerLink="/registro">
+            Crear una cuenta
+          </ion-button>
+        </div>
+      </div>
+    </section>
+  </main>
+</ion-content>

@@ -1,0 +1,116 @@
+:host {
+  --naranja-fondo: #FFAA00;
+  --naranja: #FF8800;
+  --texto: #30251d;
+  --crema: #fffaf4;
+}
+
+.acceso {
+  --background: var(--naranja-fondo);
+}
+
+.pantalla {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px 24px;
+  background: var(--naranja-fondo);
+}
+
+.tarjeta {
+  position: relative;
+  width: min(100%, 390px);
+  margin-top: 112px;
+  border-radius: 34px 34px 24px 24px;
+  background: var(--crema);
+  box-shadow: 0 18px 34px rgba(100, 54, 0, 0.18);
+}
+
+.ilustracion {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% - 65px);
+  left: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.ilustracion img {
+  width: min(88%, 330px);
+  max-height: 245px;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+.contenido {
+  position: relative;
+  z-index: 1;
+  padding: 78px 25px 28px;
+  text-align: center;
+}
+
+.etiqueta {
+  margin: 0 0 8px;
+  color: var(--naranja);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+h1 {
+  margin: 0 0 13px;
+  color: var(--naranja);
+  font-family: 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
+  font-size: clamp(32px, 9vw, 44px);
+  line-height: .96;
+}
+
+.descripcion {
+  max-width: 290px;
+  margin: 0 auto 25px;
+  color: #75685d;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.acciones {
+  width: 100%;
+}
+
+ion-button {
+  height: 50px;
+  margin-top: 11px;
+  font-weight: 700;
+  text-transform: none;
+  --border-radius: 26px;
+}
+
+.boton-principal {
+  --background: var(--naranja);
+  --background-activated: #e87900;
+  --color: #fff;
+}
+
+.boton-secundario {
+  --background: transparent;
+  --border-color: var(--naranja);
+  --color: var(--naranja);
+}
+
+.boton-volver {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 2;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .86);
+  color: var(--naranja);
+  font-size: 27px;
+  line-height: 1;
+}

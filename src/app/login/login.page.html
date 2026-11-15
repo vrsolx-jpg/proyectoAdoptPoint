@@ -1,0 +1,77 @@
+<ion-content [fullscreen]="true" class="login">
+  <button class="boton-volver" type="button" routerLink="/acceso" aria-label="Volver">
+    <span>←</span>
+  </button>
+
+  <main class="pantalla">
+    <section class="tarjeta" aria-labelledby="titulo-login">
+      <div class="ilustracion">
+        <img src="assets/img/animaleslogin.png" alt="Animales asomándose a la tarjeta">
+      </div>
+
+      <div class="contenido">
+        <p class="etiqueta">BIENVENIDO DE VUELTA</p>
+        <h1 id="titulo-login">Inicia sesión</h1>
+        <p class="descripcion">Continúa buscando a tu mejor compañero.</p>
+
+        <form #formLogin="ngForm" (ngSubmit)="iniciarSesion()" class="formulario">
+          <ion-item class="campo">
+            <ion-label position="stacked">Correo electrónico</ion-label>
+            <ion-input
+              type="email"
+              name="correo"
+              [(ngModel)]="correo"
+              placeholder="ejemplo@correo.com"
+              autocomplete="email"
+              email
+              maxlength="254"
+              required>
+            </ion-input>
+          </ion-item>
+
+          <ion-item class="campo">
+            <ion-label position="stacked">Contraseña</ion-label>
+            <ion-input
+              [type]="mostrarContrasena ? 'text' : 'password'"
+              name="contrasena"
+              [(ngModel)]="contrasena"
+              placeholder="Ingresa tu contraseña"
+              autocomplete="current-password"
+              required>
+            </ion-input>
+            <ion-button
+              slot="end"
+              fill="clear"
+              type="button"
+              class="boton-ojo"
+              (click)="mostrarContrasena = !mostrarContrasena"
+              [attr.aria-label]="mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <ion-icon
+                [name]="mostrarContrasena ? 'eye-off-outline' : 'eye-outline'"
+                slot="icon-only">
+              </ion-icon>
+            </ion-button>
+          </ion-item>
+
+          <ion-button expand="block" type="submit" class="boton-principal">
+            Iniciar sesión
+          </ion-button>
+
+          <div class="separador"><span>o continúa con</span></div>
+
+          <ion-button
+            expand="block"
+            type="button"
+            fill="outline"
+            class="boton-google"
+            (click)="iniciarConGoogle()">
+            <span class="google-g" aria-hidden="true">G</span>
+            Continuar con Google
+          </ion-button>
+        </form>
+
+        <p class="pie">¿Aún no tienes una cuenta? <a routerLink="/registro">Crear una cuenta</a></p>
+      </div>
+    </section>
+  </main>
+</ion-content>

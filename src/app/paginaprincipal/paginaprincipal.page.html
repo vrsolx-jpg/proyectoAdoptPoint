@@ -1,0 +1,132 @@
+<ion-content [fullscreen]="true" class="pagina">
+  <main class="contenedor">
+    @if (vista === 'historias') {
+      <header class="encabezado">
+        <div class="perfil">
+          <div class="avatar">AP</div>
+          <div>
+            <p class="saludo">Buenos días,</p>
+            <h1>AdoptPoint <span aria-hidden="true">🐾</span></h1>
+          </div>
+        </div>
+        <button class="boton-notificaciones" type="button" aria-label="Notificaciones">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </button>
+      </header>
+
+      <section class="busqueda" aria-label="Buscar mascotas">
+        <ion-icon name="search-outline"></ion-icon>
+        <span>Buscar mascotas, razas...</span>
+        <ion-icon name="options-outline"></ion-icon>
+      </section>
+
+      <section class="historias" aria-label="Historias de mascotas">
+        <div class="progreso" aria-hidden="true">
+          @for (historia of historias; track historia.nombre; let i = $index) {
+            <span [class.activa]="i <= historiaActual"></span>
+          }
+        </div>
+        <button
+          class="tarjeta-historia"
+          type="button"
+          (click)="siguienteHistoria()"
+          [attr.aria-label]="'Ver historia de ' + historias[historiaActual].nombre">
+          <img [src]="historias[historiaActual].imagen" [alt]="historias[historiaActual].alt">
+          <span class="etiqueta-historia">
+            {{ historias[historiaActual].nombre }}
+            <small>{{ historias[historiaActual].tipo }}</small>
+          </span>
+          <span class="flecha-historia" aria-hidden="true">→</span>
+        </button>
+        <p class="ayuda-historia">Toca la foto para conocer otra mascota</p>
+      </section>
+    } @else {
+      <header class="encabezado dashboard-encabezado">
+        <div>
+          <p class="saludo">Explora nuevas historias</p>
+          <h1>Encuentra un amigo <span aria-hidden="true">🐾</span></h1>
+        </div>
+        <button class="boton-notificaciones" type="button" aria-label="Notificaciones">
+          <ion-icon name="notifications-outline"></ion-icon>
+        </button>
+      </header>
+
+      <section class="busqueda" aria-label="Buscar mascotas">
+        <ion-icon name="search-outline"></ion-icon>
+        <span>Buscar mascotas, razas...</span>
+        <ion-icon name="options-outline"></ion-icon>
+      </section>
+
+      <nav class="categorias" aria-label="Categorías de mascotas">
+        @for (categoria of categorias; track categoria.nombre) {
+          <button type="button" [class.seleccionada]="categoria.seleccionada"
+            (click)="seleccionarCategoria(categoria.nombre)">
+            <ion-icon [name]="categoria.icono"></ion-icon>
+            <span>{{ categoria.nombre }}</span>
+          </button>
+        }
+      </nav>
+
+      <section class="seccion-dashboard">
+        <div class="titulo-seccion">
+          <h2>Recomendados para ti</h2>
+          <button type="button">Ver todos</button>
+        </div>
+        <div class="rejilla-animales">
+          <article class="tarjeta-animal">
+            <div class="imagen-animal">
+              <img src="assets/img/perro.jpg" alt="Perro disponible para adopción">
+              <button type="button" aria-label="Agregar perro a favoritos">
+                <ion-icon name="heart-outline"></ion-icon>
+              </button>
+            </div>
+            <div class="datos-animal">
+              <h3>Coco</h3>
+              <p>Compañero cariñoso · 2 años</p>
+              <span>Disponible para adopción</span>
+            </div>
+          </article>
+          <article class="tarjeta-animal">
+            <div class="imagen-animal">
+              <img src="assets/img/fili.jpg" alt="Gato disponible para adopción">
+              <button type="button" aria-label="Agregar gato a favoritos">
+                <ion-icon name="heart-outline"></ion-icon>
+              </button>
+            </div>
+            <div class="datos-animal">
+              <h3>Fili</h3>
+              <p>Tranquilo y juguetón · 1 año</p>
+              <span>Disponible para adopción</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="seccion-dashboard cerca">
+        <div class="titulo-seccion">
+          <h2>Más mascotas</h2>
+          <button type="button">Ver todos</button>
+        </div>
+        <div class="imagen-pendiente">
+          <ion-icon name="image-outline"></ion-icon>
+          <span>Imagen pendiente</span>
+        </div>
+      </section>
+    }
+  </main>
+
+  <nav class="barra-pestanas" aria-label="Navegación principal">
+    <a class="pestana activa" routerLink="/paginaprincipal" aria-current="page">
+      <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+      <span>Inicio</span>
+    </a>
+    <button class="pestana" type="button" aria-label="Buscar mascotas">
+      <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
+      <span>Buscar</span>
+    </button>
+    <a class="pestana" routerLink="/perfil" aria-label="Abrir perfil de usuario">
+      <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+      <span>Perfil</span>
+    </a>
+  </nav>
+</ion-content>
