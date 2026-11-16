@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 export type CasoPublicacion = 'hogar' | 'encontrado';
+export type RangoEdad = 'cachorro' | 'adulto' | 'mayor';
 
 export interface DatosPublicacion {
   especie: string;
@@ -8,7 +9,7 @@ export interface DatosPublicacion {
   nombre?: string;
   sinNombre?: boolean;
   raza?: string;
-  edad?: number;
+  edad?: number | RangoEdad;
   tamanio?: string;
   esterilizado?: boolean | null;
   sexo?: string;

@@ -1,17 +1,22 @@
-import { Component, inject, OnDestroy, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, signal } from '@angular/core';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { User } from 'firebase/auth';
 import { AuthService } from '../auth.service';
-import { Publicacion, PublicacionesService } from '../services/publicaciones.service';
+import { FiltrosComponent } from '../components/filtros/filtros.component';
+import type { FiltrosMascotas } from '../components/filtros/filtros.component';
+import {
+  Publicacion,
+  PublicacionesService,
+  RangoEdad
+} from '../services/publicaciones.service';
 import {
   heartOutline,
   imageOutline,
   notificationsOutline,
   optionsOutline,
   pawOutline,
-  searchOutline,
   homeOutline,
   personOutline,
   addOutline,
@@ -33,12 +38,55 @@ interface Categoria {
   seleccionada: boolean;
 }
 
+export function filtrarPublicaciones(
+  publicaciones: Publicacion[],
+  filtros: FiltrosMascotas
+): Publicacion[] {
+  return publicaciones.filter((publicacion) => {
+    const datos = publicacion.datos;
+    const especie = normalizarTexto(datos.especie);
+    const especieCoincide = !filtros.especie
+      || (filtros.especie === 'Otro'
+        ? Boolean(especie) && !['perro', 'gato', 'ave'].includes(especie)
+        : especie === normalizarTexto(filtros.especie));
+    const ubicacion = normalizarTexto(
+      [datos.ciudad, datos.lugarEncontrado].filter(Boolean).join(' ')
+    );
+
+    return especieCoincide
+      && coincideEdad(datos.edad, filtros.edad)
+      && (!filtros.tamanio
+        || normalizarTexto(datos.tamanio ?? '') === normalizarTexto(filtros.tamanio))
+      && (!filtros.sexo
+        || normalizarTexto(datos.sexo ?? '') === normalizarTexto(filtros.sexo))
+      && (!filtros.ubicacion || ubicacion.includes(normalizarTexto(filtros.ubicacion)));
+  });
+}
+
+function coincideEdad(edad: Publicacion['datos']['edad'], filtro: FiltrosMascotas['edad']): boolean {
+  if (!filtro) {
+    return true;
+  }
+  if (typeof edad === 'number') {
+    if (!Number.isFinite(edad) || edad < 0) {
+      return false;
+    }
+    edad = edad < 2 ? 'cachorro' : edad < 6 ? 'adulto' : 'mayor';
+  }
+  return edad === filtro;
+}
+
+function normalizarTexto(texto: string): string {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+}
+
 @Component({
   selector: 'app-paginaprincipal',
   templateUrl: './paginaprincipal.page.html',
   styleUrls: ['./paginaprincipal.page.scss'],
   standalone: true,
-  imports: [IonContent, IonIcon, RouterLink]
+  imports: [IonContent, IonIcon, RouterLink, FiltrosComponent]
 })
 export class PaginaPrincipalPage implements OnDestroy {
   vista: Vista = 'historias';
@@ -46,6 +94,20 @@ export class PaginaPrincipalPage implements OnDestroy {
   readonly usuario = signal<User | null>(null);
   readonly publicaciones = signal<Publicacion[]>([]);
   readonly errorPublicaciones = signal('');
+  readonly filtrosAbiertos = signal(false);
+  readonly criteriosFiltro = signal<FiltrosMascotas>({
+    edad: '',
+    tamanio: '',
+    especie: '',
+    ubicacion: '',
+    sexo: ''
+  });
+  readonly hayFiltrosActivos = computed(() =>
+    Object.values(this.criteriosFiltro()).some((criterio) => criterio.length > 0)
+  );
+  readonly publicacionesFiltradas = computed(() =>
+    filtrarPublicaciones(this.publicaciones(), this.criteriosFiltro())
+  );
   private readonly publicacionesService = inject(PublicacionesService);
   private detenerObservador: (() => void) | undefined;
 
@@ -72,7 +134,6 @@ export class PaginaPrincipalPage implements OnDestroy {
       notificationsOutline,
       optionsOutline,
       pawOutline,
-      searchOutline,
       homeOutline,
       personOutline,
       addOutline,
@@ -121,12 +182,28 @@ export class PaginaPrincipalPage implements OnDestroy {
         detalle.push(datos.raza);
       }
       if (datos.edad !== undefined) {
-        detalle.push(`${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`);
+        detalle.push(typeof datos.edad === 'number'
+          ? `${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`
+          : this.etiquetaRangoEdad(datos.edad));
+      }
+      if (datos.tamanio) {
+        detalle.push(datos.tamanio);
+      }
+      if (datos.sexo) {
+        detalle.push(datos.sexo);
       }
       if (datos.ciudad) {
         detalle.push(datos.ciudad);
       }
     } else {
+      if (datos.edad) {
+        detalle.push(typeof datos.edad === 'number'
+          ? `${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`
+          : this.etiquetaRangoEdad(datos.edad));
+      }
+      if (datos.tamanio) {
+        detalle.push(datos.tamanio);
+      }
       if (datos.lugarEncontrado) {
         detalle.push(datos.lugarEncontrado);
       }
@@ -136,6 +213,15 @@ export class PaginaPrincipalPage implements OnDestroy {
     }
 
     return detalle.join(' · ') || datos.descripcion;
+  }
+
+  private etiquetaRangoEdad(rango: RangoEdad): string {
+    const etiquetas: Record<RangoEdad, string> = {
+      cachorro: 'Cachorro (0-2 años)',
+      adulto: 'Adulto (2-6 años)',
+      mayor: 'Mayor (6+ años)'
+    };
+    return etiquetas[rango];
   }
 
   siguienteHistoria(): void {
@@ -150,6 +236,15 @@ export class PaginaPrincipalPage implements OnDestroy {
     for (const categoria of this.categorias) {
       categoria.seleccionada = categoria.nombre === nombre;
     }
+  }
+
+  alternarFiltros(): void {
+    this.filtrosAbiertos.update((abiertos) => !abiertos);
+  }
+
+  aplicarFiltros(filtros: FiltrosMascotas): void {
+    this.criteriosFiltro.set({ ...filtros, ubicacion: filtros.ubicacion.trim() });
+    this.filtrosAbiertos.set(false);
   }
 
   private cargarPublicaciones(): void {

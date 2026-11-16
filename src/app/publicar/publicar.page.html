@@ -86,7 +86,7 @@
         @if (caso === 'hogar') {
           <div class="campos">
             <section class="campo">
-              <label for="nombre-gato">Nombre</label>
+              <label for="nombre-gato">Nombre <span>— Obligatorio si tiene nombre</span></label>
               <input id="nombre-gato" name="nombreGato" type="text" maxlength="40"
                 placeholder="Nombre de la mascota" [(ngModel)]="nombre" [disabled]="sinNombre">
               <div class="contador">{{ nombre.length }}/40</div>
@@ -97,7 +97,7 @@
             </section>
 
             <section class="campo">
-              <label>Especie</label>
+              <label>Especie <span>— Obligatorio</span></label>
               <div class="chips">
                 @for (especie of especies; track especie) {
                   <button type="button" class="chip" [class.seleccionado]="especieCasa === especie"
@@ -108,7 +108,8 @@
                 }
               </div>
               @if (especieCasa === 'Otro') {
-                <input class="campo-extra" name="otraEspecieCasa" type="text" maxlength="50"
+                <label for="otra-especie-casa">Especifica la especie <span>— Obligatorio</span></label>
+                <input id="otra-especie-casa" class="campo-extra" name="otraEspecieCasa" type="text" maxlength="50"
                   placeholder="¿Qué animal es?" [(ngModel)]="otraEspecieCasa">
               }
             </section>
@@ -120,13 +121,19 @@
             </section>
 
             <section class="campo">
-              <label for="edad">Edad (años)</label>
-              <input id="edad" name="edad" type="number" min="0" max="40" step="0.5"
-                placeholder="Ej.: 3" [(ngModel)]="edad">
+              <label>Edad <span>— Obligatorio</span></label>
+              <div class="chips">
+                @for (rango of rangosEdad; track rango.valor) {
+                  <button type="button" class="chip" [class.seleccionado]="edad === rango.valor"
+                    [attr.aria-pressed]="edad === rango.valor" (click)="edad = rango.valor">
+                    {{ rango.texto }}
+                  </button>
+                }
+              </div>
             </section>
 
             <section class="campo">
-              <label>Tamaño <span class="opcional">— Opcional</span></label>
+              <label>Tamaño <span>— Obligatorio</span></label>
               <div class="chips">
                 @for (tamano of tamanos; track tamano) {
                   <button type="button" class="chip" [class.seleccionado]="tamanio === tamano"
@@ -138,14 +145,14 @@
             </section>
 
             <section class="campo">
-              <label for="descripcion-animal">Descripción</label>
+              <label for="descripcion-animal">Descripción <span>— Obligatorio</span></label>
               <textarea id="descripcion-animal" name="descripcionAnimal" rows="4" maxlength="1000"
                 placeholder="Describe su personalidad, cuidados y qué hogar necesita..."
                 [(ngModel)]="descripcion"></textarea>
             </section>
 
             <section class="campo">
-              <label>Esterilizado</label>
+              <label>Esterilizado <span>— Obligatorio</span></label>
               <div class="chips">
                 <button type="button" class="chip" [class.seleccionado]="esterilizado === true"
                   [attr.aria-pressed]="esterilizado === true" (click)="esterilizado = true">Sí</button>
@@ -155,7 +162,7 @@
             </section>
 
             <section class="campo">
-              <label>Sexo <span class="opcional">— Opcional</span></label>
+              <label>Sexo <span>— Obligatorio</span></label>
               <div class="chips">
                 <button type="button" class="chip" [class.seleccionado]="sexo === 'Macho'"
                   [attr.aria-pressed]="sexo === 'Macho'" (click)="sexo = 'Macho'">Macho</button>
@@ -197,7 +204,7 @@
             </section>
 
             <section class="campo">
-              <label for="ciudad">Ciudad</label>
+              <label for="ciudad">Ciudad <span>— Obligatorio</span></label>
               <input id="ciudad" name="ciudad" type="text" maxlength="80"
                 placeholder="Ej.: Bogotá" [(ngModel)]="ciudad">
             </section>
@@ -234,23 +241,23 @@
 
             <h3 class="subtitulo-formulario">Historial de salud <span class="opcional">— Opcional</span></h3>
             <section class="campo">
-              <label for="veterinario">Veterinario</label>
+              <label for="veterinario">Veterinario <span class="opcional">— Opcional</span></label>
               <input id="veterinario" name="veterinario" type="text" maxlength="100"
                 placeholder="Clínica veterinaria" [(ngModel)]="veterinario">
             </section>
             <section class="campo">
-              <label for="ultima-visita">Última visita al veterinario</label>
+              <label for="ultima-visita">Última visita al veterinario <span class="opcional">— Opcional</span></label>
               <input id="ultima-visita" name="ultimaVisita" type="date" [(ngModel)]="ultimaVisita">
             </section>
             <section class="campo">
-              <label for="proxima-cita">Próxima cita veterinaria</label>
+              <label for="proxima-cita">Próxima cita veterinaria <span class="opcional">— Opcional</span></label>
               <input id="proxima-cita" name="proximaCita" type="date" [(ngModel)]="proximaCita">
             </section>
           </div>
         } @else {
           <div class="campos">
             <section class="campo">
-              <label>Tipo de animal</label>
+              <label>Tipo de animal <span>— Obligatorio</span></label>
               <div class="chips">
                 @for (especie of especies; track especie) {
                   <button type="button" class="chip"
@@ -263,25 +270,54 @@
                 }
               </div>
               @if (especieEncontrada === 'Otro') {
-                <input class="campo-extra" name="otraEspecie" type="text" maxlength="50"
+                <label for="otra-especie-encontrado">Especifica la especie <span>— Obligatorio</span></label>
+                <input id="otra-especie-encontrado" class="campo-extra" name="otraEspecie" type="text" maxlength="50"
                   placeholder="¿Qué animal es?" [(ngModel)]="otraEspecie">
               }
             </section>
 
             <section class="campo">
-              <label for="fecha-encontrado">¿Cuándo lo encontraste?</label>
+              <label>Edad aproximada <span>— Obligatorio</span></label>
+              <div class="chips">
+                @for (rango of rangosEdad; track rango.valor) {
+                  <button type="button" class="chip"
+                    [class.seleccionado]="edadEncontrado === rango.valor"
+                    [attr.aria-pressed]="edadEncontrado === rango.valor"
+                    (click)="edadEncontrado = rango.valor">
+                    {{ rango.texto }}
+                  </button>
+                }
+              </div>
+            </section>
+
+            <section class="campo">
+              <label>Tamaño aproximado <span>— Obligatorio</span></label>
+              <div class="chips">
+                @for (tamano of tamanos; track tamano) {
+                  <button type="button" class="chip"
+                    [class.seleccionado]="tamanioEncontrado === tamano"
+                    [attr.aria-pressed]="tamanioEncontrado === tamano"
+                    (click)="tamanioEncontrado = tamano">
+                    {{ tamano }}
+                  </button>
+                }
+              </div>
+            </section>
+
+            <section class="campo">
+              <label for="fecha-encontrado">¿Cuándo lo encontraste? <span>— Obligatorio</span></label>
               <input id="fecha-encontrado" name="fechaEncontrado" type="date"
                 [(ngModel)]="fechaEncontrado">
             </section>
 
             <section class="campo">
-              <label for="lugar-encontrado">Lugar donde lo encontraste</label>
+              <label for="lugar-encontrado">Lugar donde lo encontraste <span>— Obligatorio</span></label>
               <input id="lugar-encontrado" name="lugarEncontrado" type="text" maxlength="160"
                 placeholder="Barrio, dirección o punto de referencia" [(ngModel)]="lugarEncontrado">
             </section>
 
             <section class="campo">
-              <label for="descripcion-encontrado">Descripción breve</label>
+              <label for="descripcion-encontrado">Descripción breve <span>— Obligatorio</span></label>
               <textarea id="descripcion-encontrado" name="descripcionEncontrado" rows="4" maxlength="500"
                 placeholder="Describe su apariencia y cómo se encuentra..."
                 [(ngModel)]="descripcionEncontrado"></textarea>

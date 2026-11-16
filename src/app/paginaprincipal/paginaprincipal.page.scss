@@ -147,24 +147,34 @@ h1 {
 
 .busqueda {
   display: flex;
+  width: 100%;
+  box-sizing: border-box;
   align-items: center;
   gap: 10px;
   height: 48px;
   margin-bottom: 18px;
   padding: 0 15px;
+  border: 0;
   border-radius: 25px;
   background: #fff;
   color: #aaa09a;
   font-size: 13px;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
   box-shadow: 0 5px 16px rgba(66, 45, 28, 0.05);
 }
 
-.busqueda ion-icon:first-child {
-  color: var(--tinta);
-  font-size: 20px;
+.panel-filtros-desplegable {
+  margin-bottom: 18px;
 }
 
-.busqueda ion-icon:last-child {
+.sin-resultados {
+  color: var(--suave);
+  text-align: center;
+}
+
+.busqueda ion-icon {
   margin-left: auto;
   color: var(--tinta);
   font-size: 19px;

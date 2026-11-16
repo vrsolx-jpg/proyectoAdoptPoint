@@ -18,47 +18,55 @@
       </button>
     </header>
 
-    <section class="busqueda" aria-label="Buscar mascotas">
-      <ion-icon name="search-outline"></ion-icon>
-      <span>Buscar mascotas, razas...</span>
-      <ion-icon name="options-outline"></ion-icon>
-    </section>
+    <button class="busqueda" type="button" aria-controls="panel-filtros"
+      [attr.aria-expanded]="filtrosAbiertos()" (click)="alternarFiltros()">
+      <span>Filtrar mascotas</span>
+      <ion-icon name="options-outline" aria-hidden="true"></ion-icon>
+    </button>
+
+    <div id="panel-filtros" class="panel-filtros-desplegable" [hidden]="!filtrosAbiertos()">
+      <app-filtros (filtrosAplicados)="aplicarFiltros($event)"></app-filtros>
+    </div>
 
     @if (errorPublicaciones()) {
       <p class="error-publicaciones" role="alert">{{ errorPublicaciones() }}</p>
     }
 
-    @if (publicaciones().length) {
+    @if (publicaciones().length || hayFiltrosActivos()) {
       <section class="seccion-dashboard publicaciones-recientes" aria-labelledby="titulo-publicaciones">
         <div class="titulo-seccion">
           <h2 id="titulo-publicaciones">Publicaciones recientes</h2>
         </div>
-        <div class="rejilla-animales">
-          @for (publicacion of publicaciones(); track publicacion.id) {
-            <article class="tarjeta-animal">
-              @if (publicacion.fotos[0]) {
-                <div class="imagen-animal">
-                  <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
+        @if (publicacionesFiltradas().length) {
+          <div class="rejilla-animales">
+            @for (publicacion of publicacionesFiltradas(); track publicacion.id) {
+              <article class="tarjeta-animal">
+                @if (publicacion.fotos[0]) {
+                  <div class="imagen-animal">
+                    <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
+                  </div>
+                } @else {
+                  <div class="imagen-pendiente">
+                    <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+                    <span>Sin foto</span>
+                  </div>
+                }
+                <div class="datos-animal">
+                  <h3>{{ tituloPublicacion(publicacion) }}</h3>
+                  <p>{{ detallePublicacion(publicacion) }}</p>
+                  <span>{{ publicacion.caso === 'hogar' ? 'En adopción' : 'Animal encontrado' }}</span>
+                  <p>{{ publicacion.datos.descripcion }}</p>
                 </div>
-              } @else {
-                <div class="imagen-pendiente">
-                  <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-                  <span>Sin foto</span>
-                </div>
-              }
-              <div class="datos-animal">
-                <h3>{{ tituloPublicacion(publicacion) }}</h3>
-                <p>{{ detallePublicacion(publicacion) }}</p>
-                <span>{{ publicacion.caso === 'hogar' ? 'En adopción' : 'Animal encontrado' }}</span>
-                <p>{{ publicacion.datos.descripcion }}</p>
-              </div>
-            </article>
-          }
-        </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <p class="sin-resultados" role="status">No hay publicaciones que coincidan con los filtros seleccionados.</p>
+        }
       </section>
     }
 
-    @if (vista === 'historias') {
+    @if (!hayFiltrosActivos() && vista === 'historias') {
       <section class="historias" aria-label="Historias de mascotas">
         <div class="progreso" aria-hidden="true">
           @for (historia of historias; track historia.nombre; let i = $index) {
@@ -79,7 +87,7 @@
         </button>
         <p class="ayuda-historia">Toca la foto para conocer otra mascota</p>
       </section>
-    } @else {
+    } @else if (!hayFiltrosActivos()) {
       <nav class="categorias" aria-label="Categorías de mascotas">
         @for (categoria of categorias; track categoria.nombre) {
           <button type="button" [class.seleccionada]="categoria.seleccionada"

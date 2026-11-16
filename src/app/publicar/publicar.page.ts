@@ -18,7 +18,8 @@ import { auth } from '../firebase';
 import {
   CasoPublicacion,
   DatosPublicacion,
-  PublicacionesService
+  PublicacionesService,
+  RangoEdad
 } from '../services/publicaciones.service';
 
 type Respuesta = boolean | null;
@@ -49,7 +50,7 @@ export class PublicarPage {
   nombre = '';
   sinNombre = false;
   raza = '';
-  edad = '';
+  edad: RangoEdad | '' = '';
   tamanio = '';
   descripcion = '';
   esterilizado: Respuesta = null;
@@ -72,9 +73,16 @@ export class PublicarPage {
   otraEspecie = '';
   lugarEncontrado = '';
   fechaEncontrado = '';
+  edadEncontrado: RangoEdad | '' = '';
+  tamanioEncontrado = '';
   descripcionEncontrado = '';
 
   readonly tamanos = ['Pequeño', 'Mediano', 'Grande'];
+  readonly rangosEdad: { valor: RangoEdad; texto: string }[] = [
+    { valor: 'cachorro', texto: 'Cachorro · 0-2 años' },
+    { valor: 'adulto', texto: 'Adulto · 2-6 años' },
+    { valor: 'mayor', texto: 'Mayor · 6+ años' }
+  ];
   readonly especies = ['Perro', 'Gato', 'Ave', 'Otro'] as const;
   readonly espaciosFotos = [0, 1, 2];
   private siguienteIdFoto = 0;
@@ -190,9 +198,9 @@ export class PublicarPage {
 
   private validarAnimalDeCasa(): DatosPublicacion | null {
     if (!this.especieCasa || (this.especieCasa === 'Otro' && !this.otraEspecieCasa.trim())
-      || (!this.sinNombre && !this.nombre.trim()) || !this.edad || Number(this.edad) < 0
+      || (!this.sinNombre && !this.nombre.trim()) || !this.edad || !this.tamanio || !this.sexo
       || !this.descripcion.trim() || !this.ciudad.trim() || this.esterilizado === null) {
-      this.mensaje = 'Completa la especie, nombre (o indica que no tiene), edad, descripción, ciudad y esterilización.';
+      this.mensaje = 'Completa la especie, nombre (o indica que no tiene), edad, tamaño, sexo, descripción, ciudad y esterilización.';
       return null;
     }
 
@@ -201,7 +209,7 @@ export class PublicarPage {
       nombre: this.sinNombre ? '' : this.nombre.trim(),
       sinNombre: this.sinNombre,
       raza: this.raza.trim(),
-      edad: Number(this.edad),
+      edad: this.edad,
       tamanio: this.tamanio,
       descripcion: this.descripcion.trim(),
       esterilizado: this.esterilizado,
@@ -222,13 +230,16 @@ export class PublicarPage {
 
   private validarAnimalEncontrado(): DatosPublicacion | null {
     if (!this.especieEncontrada || (this.especieEncontrada === 'Otro' && !this.otraEspecie.trim())
-      || !this.lugarEncontrado.trim() || !this.fechaEncontrado || !this.descripcionEncontrado.trim()) {
-      this.mensaje = 'Completa el tipo de animal, lugar, fecha y descripción del hallazgo.';
+      || !this.edadEncontrado || !this.tamanioEncontrado || !this.lugarEncontrado.trim()
+      || !this.fechaEncontrado || !this.descripcionEncontrado.trim()) {
+      this.mensaje = 'Completa el tipo, edad aproximada y tamaño del animal, lugar, fecha y descripción del hallazgo.';
       return null;
     }
 
     return {
       especie: this.especieEncontrada === 'Otro' ? this.otraEspecie.trim() : this.especieEncontrada,
+      edad: this.edadEncontrado,
+      tamanio: this.tamanioEncontrado,
       lugarEncontrado: this.lugarEncontrado.trim(),
       fechaEncontrado: this.fechaEncontrado,
       descripcion: this.descripcionEncontrado.trim()
