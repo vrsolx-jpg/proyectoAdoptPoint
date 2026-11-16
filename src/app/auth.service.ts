@@ -8,6 +8,7 @@ import {
   User,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   updateProfile,
   UserCredential,
   browserLocalPersistence,
@@ -59,10 +60,22 @@ export class AuthService {
     );
   }
 
-  iniciarConGoogle(): Promise<UserCredential> {
+  async iniciarConGoogle(): Promise<UserCredential | void> {
     const proveedor = new GoogleAuthProvider();
     proveedor.setCustomParameters({ prompt: 'select_account' });
-    return signInWithPopup(auth, proveedor);
+
+    try {
+      return await signInWithPopup(auth, proveedor);
+    } catch (error) {
+      const codigo = typeof error === 'object' && error !== null && 'code' in error
+        ? String(error.code)
+        : '';
+      if (codigo !== 'auth/popup-blocked') {
+        throw error;
+      }
+
+      await signInWithRedirect(auth, proveedor);
+    }
   }
 
   cerrarSesion() {

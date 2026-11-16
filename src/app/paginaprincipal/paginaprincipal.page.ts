@@ -1,9 +1,10 @@
-import { Component, OnDestroy, signal } from '@angular/core';
+import { Component, inject, OnDestroy, signal } from '@angular/core';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { User } from 'firebase/auth';
 import { AuthService } from '../auth.service';
+import { Publicacion, PublicacionesService } from '../services/publicaciones.service';
 import {
   heartOutline,
   imageOutline,
@@ -43,6 +44,9 @@ export class PaginaPrincipalPage implements OnDestroy {
   vista: Vista = 'historias';
   historiaActual = 0;
   readonly usuario = signal<User | null>(null);
+  readonly publicaciones = signal<Publicacion[]>([]);
+  readonly errorPublicaciones = signal('');
+  private readonly publicacionesService = inject(PublicacionesService);
   private detenerObservador: (() => void) | undefined;
 
   readonly historias: Historia[] = [
@@ -78,6 +82,7 @@ export class PaginaPrincipalPage implements OnDestroy {
     this.detenerObservador = this.authService.observarSesion((usuario) => {
       this.usuario.set(usuario);
     });
+    this.cargarPublicaciones();
   }
 
   get nombreUsuario(): string {
@@ -94,6 +99,45 @@ export class PaginaPrincipalPage implements OnDestroy {
     this.detenerObservador?.();
   }
 
+  ionViewWillEnter(): void {
+    this.cargarPublicaciones();
+  }
+
+  tituloPublicacion(publicacion: Publicacion): string {
+    if (publicacion.caso === 'encontrado') {
+      return `${publicacion.datos.especie} encontrado`;
+    }
+
+    return publicacion.datos.nombre?.trim()
+      || `${publicacion.datos.especie} sin nombre`;
+  }
+
+  detallePublicacion(publicacion: Publicacion): string {
+    const datos = publicacion.datos;
+    const detalle: string[] = [];
+
+    if (publicacion.caso === 'hogar') {
+      if (datos.raza) {
+        detalle.push(datos.raza);
+      }
+      if (datos.edad !== undefined) {
+        detalle.push(`${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`);
+      }
+      if (datos.ciudad) {
+        detalle.push(datos.ciudad);
+      }
+    } else {
+      if (datos.lugarEncontrado) {
+        detalle.push(datos.lugarEncontrado);
+      }
+      if (datos.fechaEncontrado) {
+        detalle.push(datos.fechaEncontrado);
+      }
+    }
+
+    return detalle.join(' · ') || datos.descripcion;
+  }
+
   siguienteHistoria(): void {
     if (this.historiaActual < this.historias.length - 1) {
       this.historiaActual += 1;
@@ -105,6 +149,17 @@ export class PaginaPrincipalPage implements OnDestroy {
   seleccionarCategoria(nombre: string): void {
     for (const categoria of this.categorias) {
       categoria.seleccionada = categoria.nombre === nombre;
+    }
+  }
+
+  private cargarPublicaciones(): void {
+    this.errorPublicaciones.set('');
+    try {
+      this.publicaciones.set(this.publicacionesService.listarPublicaciones());
+    } catch (error) {
+      console.error('No se pudieron cargar las publicaciones del dispositivo.', error);
+      this.publicaciones.set([]);
+      this.errorPublicaciones.set('No se pudieron cargar las publicaciones guardadas en este dispositivo.');
     }
   }
 }

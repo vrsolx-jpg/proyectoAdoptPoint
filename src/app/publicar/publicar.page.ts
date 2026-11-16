@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -15,23 +15,18 @@ import {
   trashOutline
 } from 'ionicons/icons';
 import { auth } from '../firebase';
+import {
+  CasoPublicacion,
+  DatosPublicacion,
+  PublicacionesService
+} from '../services/publicaciones.service';
 
-type CasoPublicacion = 'hogar' | 'encontrado';
 type Respuesta = boolean | null;
 type Especie = 'Perro' | 'Gato' | 'Ave' | 'Otro' | '';
 
 interface FotoPublicacion {
   id: number;
   datos: string;
-}
-
-interface PublicacionLocal {
-  id: string;
-  usuarioId: string;
-  caso: CasoPublicacion;
-  creadaEn: string;
-  fotos: string[];
-  datos: Record<string, unknown>;
 }
 
 @Component({
@@ -42,6 +37,9 @@ interface PublicacionLocal {
   imports: [FormsModule, IonContent, IonIcon, RouterLink]
 })
 export class PublicarPage {
+  private readonly router = inject(Router);
+  private readonly publicacionesService = inject(PublicacionesService);
+
   caso: CasoPublicacion | null = null;
   fotos: FotoPublicacion[] = [];
   mensaje = '';
@@ -163,19 +161,34 @@ export class PublicarPage {
       return;
     }
 
+    const usuario = auth.currentUser;
+    if (!usuario) {
+      this.mensaje = 'Inicia sesión para guardar una publicación.';
+      return;
+    }
+
     this.guardando = true;
     try {
-      const guardada = this.guardarEnDispositivo(caso, datos);
-      if (guardada) {
-        this.mensaje = 'Publicación guardada en este dispositivo. Todavía no aparecerá en la pantalla principal.';
+      this.publicacionesService.crearPublicacion(
+        usuario.uid,
+        caso,
+        datos,
+        this.fotos.map((foto) => foto.datos)
+      );
+      const navegada = await this.router.navigate(['/paginaprincipal']);
+      if (!navegada) {
+        this.mensaje = 'La publicación se guardó, pero no se pudo abrir la página principal.';
         this.mensajeEsExito = true;
       }
+    } catch (error) {
+      console.error('No se pudo crear la publicación.', error);
+      this.mensaje = 'No se pudo guardar la publicación. Inténtalo nuevamente.';
     } finally {
       this.guardando = false;
     }
   }
 
-  private validarAnimalDeCasa(): Record<string, unknown> | null {
+  private validarAnimalDeCasa(): DatosPublicacion | null {
     if (!this.especieCasa || (this.especieCasa === 'Otro' && !this.otraEspecieCasa.trim())
       || (!this.sinNombre && !this.nombre.trim()) || !this.edad || Number(this.edad) < 0
       || !this.descripcion.trim() || !this.ciudad.trim() || this.esterilizado === null) {
@@ -207,7 +220,7 @@ export class PublicarPage {
     };
   }
 
-  private validarAnimalEncontrado(): Record<string, unknown> | null {
+  private validarAnimalEncontrado(): DatosPublicacion | null {
     if (!this.especieEncontrada || (this.especieEncontrada === 'Otro' && !this.otraEspecie.trim())
       || !this.lugarEncontrado.trim() || !this.fechaEncontrado || !this.descripcionEncontrado.trim()) {
       this.mensaje = 'Completa el tipo de animal, lugar, fecha y descripción del hallazgo.';
@@ -220,39 +233,6 @@ export class PublicarPage {
       fechaEncontrado: this.fechaEncontrado,
       descripcion: this.descripcionEncontrado.trim()
     };
-  }
-
-  private guardarEnDispositivo(caso: CasoPublicacion, datos: Record<string, unknown>): boolean {
-    const usuario = auth.currentUser;
-    if (!usuario) {
-      this.mensaje = 'Inicia sesión para guardar una publicación.';
-      return false;
-    }
-
-    const clave = `adoptpoint:publicaciones:${usuario.uid}`;
-    const publicacion: PublicacionLocal = {
-      id: `${Date.now()}-${this.siguienteIdFoto}`,
-      usuarioId: usuario.uid,
-      caso,
-      creadaEn: new Date().toISOString(),
-      fotos: this.fotos.map((foto) => foto.datos),
-      datos
-    };
-
-    try {
-      const contenido = localStorage.getItem(clave);
-      const publicaciones: unknown = contenido ? JSON.parse(contenido) : [];
-      if (!Array.isArray(publicaciones)) {
-        throw new Error('El historial de publicaciones guardado no es válido.');
-      }
-
-      localStorage.setItem(clave, JSON.stringify([...publicaciones, publicacion]));
-      return true;
-    } catch (error) {
-      console.error('No se pudo guardar la publicación en este dispositivo.', error);
-      this.mensaje = 'No se pudo guardar la publicación. Inténtalo nuevamente.';
-      return false;
-    }
   }
 
   private async prepararFoto(archivo: File): Promise<string> {

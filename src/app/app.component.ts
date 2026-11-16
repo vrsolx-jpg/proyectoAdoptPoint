@@ -29,19 +29,22 @@ export class AppComponent implements OnInit, OnDestroy {
     try {
       await this.authService.prepararSesion();
       this.detenerObservador = this.authService.observarSesion(async (usuario) => {
-        if (this.sesionInicializada) {
-          return;
-        }
-
+        const primeraEmision = !this.sesionInicializada;
         this.sesionInicializada = true;
         try {
-          if (usuario && !this.router.url.includes('/paginaprincipal')) {
+          const debeAbrirInicio = primeraEmision
+            ? !this.router.url.includes('/paginaprincipal')
+            : this.esRutaDeAutenticacion(this.router.url);
+
+          if (usuario && debeAbrirInicio) {
             await this.router.navigate(['/paginaprincipal']);
           }
         } catch (error) {
           console.error('No se pudo abrir la página principal.', error);
         } finally {
-          this.finalizarCarga();
+          if (primeraEmision) {
+            this.finalizarCarga();
+          }
         }
       });
     } catch (error) {
@@ -67,5 +70,10 @@ export class AppComponent implements OnInit, OnDestroy {
       this.cargando.set(false);
       this.temporizadorCarga = undefined;
     }, tiempoRestante);
+  }
+
+  private esRutaDeAutenticacion(url: string): boolean {
+    const ruta = url.split('?')[0].split('#')[0];
+    return ['/acceso', '/login', '/registro', '/tabs/acceso'].includes(ruta);
   }
 }

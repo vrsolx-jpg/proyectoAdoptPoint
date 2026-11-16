@@ -1,30 +1,64 @@
 <ion-content [fullscreen]="true" class="pagina">
   <main class="contenedor">
-    @if (vista === 'historias') {
-      <header class="encabezado">
-        <div class="perfil">
-          <div class="avatar">
-            @if (usuario()?.photoURL) {
-              <img [src]="usuario()!.photoURL" [alt]="'Foto de ' + nombreUsuario">
-            } @else {
-              <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
-            }
-          </div>
-          <div>
-            <p class="saludo">Bienvenida de vuelta {{ nombreUsuario }}!</p>
-          </div>
+    <header class="encabezado" [class.dashboard-encabezado]="vista === 'dashboard'">
+      <div class="perfil">
+        <div class="avatar">
+          @if (usuario()?.photoURL) {
+            <img [src]="usuario()!.photoURL" [alt]="'Foto de ' + nombreUsuario">
+          } @else {
+            <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+          }
         </div>
-        <button class="boton-notificaciones" type="button" aria-label="Notificaciones">
-          <ion-icon name="notifications-outline"></ion-icon>
-        </button>
-      </header>
+        <div>
+          <p class="saludo">Bienvenida de vuelta {{ nombreUsuario }}!</p>
+        </div>
+      </div>
+      <button class="boton-notificaciones" type="button" aria-label="Notificaciones">
+        <ion-icon name="notifications-outline"></ion-icon>
+      </button>
+    </header>
 
-      <section class="busqueda" aria-label="Buscar mascotas">
-        <ion-icon name="search-outline"></ion-icon>
-        <span>Buscar mascotas, razas...</span>
-        <ion-icon name="options-outline"></ion-icon>
+    <section class="busqueda" aria-label="Buscar mascotas">
+      <ion-icon name="search-outline"></ion-icon>
+      <span>Buscar mascotas, razas...</span>
+      <ion-icon name="options-outline"></ion-icon>
+    </section>
+
+    @if (errorPublicaciones()) {
+      <p class="error-publicaciones" role="alert">{{ errorPublicaciones() }}</p>
+    }
+
+    @if (publicaciones().length) {
+      <section class="seccion-dashboard publicaciones-recientes" aria-labelledby="titulo-publicaciones">
+        <div class="titulo-seccion">
+          <h2 id="titulo-publicaciones">Publicaciones recientes</h2>
+        </div>
+        <div class="rejilla-animales">
+          @for (publicacion of publicaciones(); track publicacion.id) {
+            <article class="tarjeta-animal">
+              @if (publicacion.fotos[0]) {
+                <div class="imagen-animal">
+                  <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
+                </div>
+              } @else {
+                <div class="imagen-pendiente">
+                  <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+                  <span>Sin foto</span>
+                </div>
+              }
+              <div class="datos-animal">
+                <h3>{{ tituloPublicacion(publicacion) }}</h3>
+                <p>{{ detallePublicacion(publicacion) }}</p>
+                <span>{{ publicacion.caso === 'hogar' ? 'En adopción' : 'Animal encontrado' }}</span>
+                <p>{{ publicacion.datos.descripcion }}</p>
+              </div>
+            </article>
+          }
+        </div>
       </section>
+    }
 
+    @if (vista === 'historias') {
       <section class="historias" aria-label="Historias de mascotas">
         <div class="progreso" aria-hidden="true">
           @for (historia of historias; track historia.nombre; let i = $index) {
@@ -46,30 +80,6 @@
         <p class="ayuda-historia">Toca la foto para conocer otra mascota</p>
       </section>
     } @else {
-      <header class="encabezado dashboard-encabezado">
-        <div class="perfil">
-          <div class="avatar">
-            @if (usuario()?.photoURL) {
-              <img [src]="usuario()!.photoURL" [alt]="'Foto de ' + nombreUsuario">
-            } @else {
-              <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
-            }
-          </div>
-          <div>
-            <p class="saludo">Bienvenida de vuelta {{ nombreUsuario }}!</p>
-          </div>
-        </div>
-        <button class="boton-notificaciones" type="button" aria-label="Notificaciones">
-          <ion-icon name="notifications-outline"></ion-icon>
-        </button>
-      </header>
-
-      <section class="busqueda" aria-label="Buscar mascotas">
-        <ion-icon name="search-outline"></ion-icon>
-        <span>Buscar mascotas, razas...</span>
-        <ion-icon name="options-outline"></ion-icon>
-      </section>
-
       <nav class="categorias" aria-label="Categorías de mascotas">
         @for (categoria of categorias; track categoria.nombre) {
           <button type="button" [class.seleccionada]="categoria.seleccionada"
@@ -133,10 +143,10 @@
       <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
       <span>Inicio</span>
     </a>
-    <button class="pestana publicar" type="button" aria-label="Publicar">
+    <a class="pestana publicar" routerLink="/publicar" aria-label="Publicar mascota">
       <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
       <span>Publicar</span>
-    </button>
+    </a>
     <a class="pestana" routerLink="/perfil" aria-label="Abrir perfil de usuario">
       <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
       <span>Perfil</span>
