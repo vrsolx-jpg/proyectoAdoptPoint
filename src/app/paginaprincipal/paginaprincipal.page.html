@@ -32,16 +32,27 @@
       <p class="error-publicaciones" role="alert">{{ errorPublicaciones() }}</p>
     }
 
-<<<<<<< HEAD
+    @if (vista === 'dashboard') {
+      <h2 class="titulo-todas-mascotas">Todas las mascotas</h2>
+    }
+
     @if (publicaciones().length || hayFiltrosActivos()) {
       <section class="seccion-dashboard publicaciones-recientes" aria-labelledby="titulo-publicaciones">
         <div class="titulo-seccion">
           <h2 id="titulo-publicaciones">Publicaciones recientes</h2>
         </div>
+
         @if (publicacionesFiltradas().length) {
           <div class="rejilla-animales">
             @for (publicacion of publicacionesFiltradas(); track publicacion.id) {
-              <article class="tarjeta-animal">
+              <article
+                class="tarjeta-animal tarjeta-publicacion"
+                tabindex="0"
+                role="button"
+                [attr.aria-label]="'Ver información de ' + tituloPublicacion(publicacion)"
+                (click)="abrirDetalle(publicacion)"
+                (keydown.enter)="abrirDetalle(publicacion)"
+                (keydown.space)="abrirDetalle(publicacion); $event.preventDefault()">
                 @if (publicacion.fotos[0]) {
                   <div class="imagen-animal">
                     <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
@@ -55,7 +66,7 @@
                 <div class="datos-animal">
                   <h3>{{ tituloPublicacion(publicacion) }}</h3>
                   <p>{{ detallePublicacion(publicacion) }}</p>
-                  <span>{{ publicacion.caso === 'hogar' ? 'En adopción' : 'Animal encontrado' }}</span>
+                  <span>{{ estadoPublicacion(publicacion) }}</span>
                   <p>{{ publicacion.datos.descripcion }}</p>
                 </div>
               </article>
@@ -64,43 +75,6 @@
         } @else {
           <p class="sin-resultados" role="status">No hay publicaciones que coincidan con los filtros seleccionados.</p>
         }
-=======
-    @if (vista === 'dashboard') {
-      <h2 class="titulo-todas-mascotas">Todas las mascotas</h2>
-    }
-
-    @if (publicaciones().length) {
-      <section class="seccion-dashboard publicaciones-recientes" aria-label="Todas las mascotas">
-        <div class="rejilla-animales">
-          @for (publicacion of publicaciones(); track publicacion.id) {
-            <article
-              class="tarjeta-animal tarjeta-publicacion"
-              tabindex="0"
-              role="button"
-              [attr.aria-label]="'Ver información de ' + tituloPublicacion(publicacion)"
-              (click)="abrirDetalle(publicacion)"
-              (keydown.enter)="abrirDetalle(publicacion)"
-              (keydown.space)="abrirDetalle(publicacion); $event.preventDefault()">
-              @if (publicacion.fotos[0]) {
-                <div class="imagen-animal">
-                  <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
-                </div>
-              } @else {
-                <div class="imagen-pendiente">
-                  <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-                  <span>Sin foto</span>
-                </div>
-              }
-              <div class="datos-animal">
-                <h3>{{ tituloPublicacion(publicacion) }}</h3>
-                <p>{{ detallePublicacion(publicacion) }}</p>
-                  <span>{{ estadoPublicacion(publicacion) }}</span>
-                <p>{{ publicacion.datos.descripcion }}</p>
-              </div>
-            </article>
-          }
-        </div>
->>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
       </section>
     }
 
@@ -125,67 +99,8 @@
         </button>
         <p class="ayuda-historia">Toca la foto para conocer otra mascota</p>
       </section>
-<<<<<<< HEAD
-    } @else if (!hayFiltrosActivos()) {
-      <nav class="categorias" aria-label="Categorías de mascotas">
-        @for (categoria of categorias; track categoria.nombre) {
-          <button type="button" [class.seleccionada]="categoria.seleccionada"
-            (click)="seleccionarCategoria(categoria.nombre)">
-            <ion-icon [name]="categoria.icono"></ion-icon>
-            <span>{{ categoria.nombre }}</span>
-          </button>
-        }
-      </nav>
-
-      <section class="seccion-dashboard">
-        <div class="titulo-seccion">
-          <h2>Recomendados para ti</h2>
-          <button type="button">Ver todos</button>
-        </div>
-        <div class="rejilla-animales">
-          <article class="tarjeta-animal">
-            <div class="imagen-animal">
-              <img src="assets/img/perro.jpg" alt="Perro disponible para adopción">
-              <button type="button" aria-label="Agregar perro a favoritos">
-                <ion-icon name="heart-outline"></ion-icon>
-              </button>
-            </div>
-            <div class="datos-animal">
-              <h3>Coco</h3>
-              <p>Compañero cariñoso · 2 años</p>
-              <span>Disponible para adopción</span>
-            </div>
-          </article>
-          <article class="tarjeta-animal">
-            <div class="imagen-animal">
-              <img src="assets/img/fili.jpg" alt="Gato disponible para adopción">
-              <button type="button" aria-label="Agregar gato a favoritos">
-                <ion-icon name="heart-outline"></ion-icon>
-              </button>
-            </div>
-            <div class="datos-animal">
-              <h3>Fili</h3>
-              <p>Tranquilo y juguetón · 1 año</p>
-              <span>Disponible para adopción</span>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="seccion-dashboard cerca">
-        <div class="titulo-seccion">
-          <h2>Más mascotas</h2>
-          <button type="button">Ver todos</button>
-        </div>
-        <div class="imagen-pendiente">
-          <ion-icon name="image-outline"></ion-icon>
-          <span>Imagen pendiente</span>
-        </div>
-      </section>
-=======
     } @else {
       <app-tarjetas-mascotas></app-tarjetas-mascotas>
->>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
     }
   </main>
 

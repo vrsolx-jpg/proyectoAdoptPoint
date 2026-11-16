@@ -51,6 +51,7 @@ export function filtrarPublicaciones(
       || (filtros.especie === 'Otro'
         ? Boolean(especie) && !['perro', 'gato', 'ave'].includes(especie)
         : especie === normalizarTexto(filtros.especie));
+
     const ubicacion = normalizarTexto(
       [datos.ciudad, datos.lugarEncontrado].filter(Boolean).join(' ')
     );
@@ -61,26 +62,37 @@ export function filtrarPublicaciones(
         || normalizarTexto(datos.tamanio ?? '') === normalizarTexto(filtros.tamanio))
       && (!filtros.sexo
         || normalizarTexto(datos.sexo ?? '') === normalizarTexto(filtros.sexo))
-      && (!filtros.ubicacion || ubicacion.includes(normalizarTexto(filtros.ubicacion)));
+      && (!filtros.ubicacion
+        || ubicacion.includes(normalizarTexto(filtros.ubicacion)));
   });
 }
 
-function coincideEdad(edad: Publicacion['datos']['edad'], filtro: FiltrosMascotas['edad']): boolean {
+function coincideEdad(
+  edad: Publicacion['datos']['edad'],
+  filtro: FiltrosMascotas['edad']
+): boolean {
   if (!filtro) {
     return true;
   }
+
   if (typeof edad === 'number') {
     if (!Number.isFinite(edad) || edad < 0) {
       return false;
     }
+
     edad = edad < 2 ? 'cachorro' : edad < 6 ? 'adulto' : 'mayor';
   }
+
   return edad === filtro;
 }
 
 function normalizarTexto(texto: string): string {
-  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLocaleLowerCase()
+    .replace(/\s+/g, ' ');
 }
 
 @Component({
@@ -88,16 +100,25 @@ function normalizarTexto(texto: string): string {
   templateUrl: './paginaprincipal.page.html',
   styleUrls: ['./paginaprincipal.page.scss'],
   standalone: true,
-  imports: [IonContent, IonIcon, RouterLink, FiltrosComponent,TarjetasMascotasComponent ]
+  imports: [
+    IonContent,
+    IonIcon,
+    RouterLink,
+    FiltrosComponent,
+    TarjetasMascotasComponent
+  ]
 })
 export class PaginaPrincipalPage implements OnDestroy {
   vista: Vista = 'historias';
   historiaActual = 0;
+
   private readonly claveHistoriasVistas = 'adoptpoint:historias-vistas:';
+
   readonly usuario = signal<User | null>(null);
   readonly publicaciones = signal<Publicacion[]>([]);
   readonly errorPublicaciones = signal('');
   readonly filtrosAbiertos = signal(false);
+
   readonly criteriosFiltro = signal<FiltrosMascotas>({
     edad: '',
     tamanio: '',
@@ -105,27 +126,65 @@ export class PaginaPrincipalPage implements OnDestroy {
     ubicacion: '',
     sexo: ''
   });
+
   readonly hayFiltrosActivos = computed(() =>
-    Object.values(this.criteriosFiltro()).some((criterio) => criterio.length > 0)
+    Object.values(this.criteriosFiltro())
+      .some((criterio) => criterio.length > 0)
   );
+
   readonly publicacionesFiltradas = computed(() =>
-    filtrarPublicaciones(this.publicaciones(), this.criteriosFiltro())
+    filtrarPublicaciones(
+      this.publicaciones(),
+      this.criteriosFiltro()
+    )
   );
+
   readonly publicacionSeleccionada = signal<Publicacion | null>(null);
+
   private readonly publicacionesService = inject(PublicacionesService);
   private detenerObservador: (() => void) | undefined;
 
   readonly historias: Historia[] = [
-    { nombre: 'Coco', tipo: 'Perro', imagen: 'assets/img/perro.jpg', alt: 'Perro disponible para adopción' },
-    { nombre: 'Fili', tipo: 'Gato', imagen: 'assets/img/fili.jpg', alt: 'Gato disponible para adopción' }
+    {
+      nombre: 'Coco',
+      tipo: 'Perro',
+      imagen: 'assets/img/perro.jpg',
+      alt: 'Perro disponible para adopción'
+    },
+    {
+      nombre: 'Fili',
+      tipo: 'Gato',
+      imagen: 'assets/img/fili.jpg',
+      alt: 'Gato disponible para adopción'
+    }
   ];
 
   readonly categorias: Categoria[] = [
-    { nombre: 'Todos', icono: 'paw-outline', seleccionada: true },
-    { nombre: 'Perros', icono: 'paw-outline', seleccionada: false },
-    { nombre: 'Gatos', icono: 'paw-outline', seleccionada: false },
-    { nombre: 'Aves', icono: 'paw-outline', seleccionada: false },
-    { nombre: 'Otros', icono: 'paw-outline', seleccionada: false }
+    {
+      nombre: 'Todos',
+      icono: 'paw-outline',
+      seleccionada: true
+    },
+    {
+      nombre: 'Perros',
+      icono: 'paw-outline',
+      seleccionada: false
+    },
+    {
+      nombre: 'Gatos',
+      icono: 'paw-outline',
+      seleccionada: false
+    },
+    {
+      nombre: 'Aves',
+      icono: 'paw-outline',
+      seleccionada: false
+    },
+    {
+      nombre: 'Otros',
+      icono: 'paw-outline',
+      seleccionada: false
+    }
   ];
 
   constructor(private readonly authService: AuthService) {
@@ -149,16 +208,24 @@ export class PaginaPrincipalPage implements OnDestroy {
       this.usuario.set(usuario);
       this.configurarVistaInicial(usuario);
     });
+
+    this.cargarPublicaciones();
   }
 
   get nombreUsuario(): string {
     const usuario = this.usuario();
-    const nombreRegistrado = this.authService.obtenerNombreRegistrado(usuario);
+    const nombreRegistrado =
+      this.authService.obtenerNombreRegistrado(usuario);
+
     const nombre = nombreRegistrado
       || usuario?.displayName?.trim()
       || 'Hola';
 
     return nombre.split(/\s+/)[0];
+  }
+
+  ionViewWillEnter(): void {
+    this.cargarPublicaciones();
   }
 
   ngOnDestroy(): void {
@@ -171,6 +238,7 @@ export class PaginaPrincipalPage implements OnDestroy {
     }
 
     const clave = `${this.claveHistoriasVistas}${usuario.uid}`;
+
     if (localStorage.getItem(clave) === 'true') {
       this.vista = 'dashboard';
       return;
@@ -196,29 +264,39 @@ export class PaginaPrincipalPage implements OnDestroy {
       if (datos.raza) {
         detalle.push(datos.raza);
       }
+
       if (datos.edad !== undefined) {
-        detalle.push(typeof datos.edad === 'number'
-          ? `${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`
-          : this.etiquetaRangoEdad(datos.edad));
+        detalle.push(
+          typeof datos.edad === 'number'
+            ? `${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`
+            : this.etiquetaRangoEdad(datos.edad)
+        );
       }
+
       if (datos.tamanio) {
         detalle.push(datos.tamanio);
       }
+
       if (datos.sexo) {
         detalle.push(datos.sexo);
       }
+
       if (datos.ciudad) {
         detalle.push(datos.ciudad);
       }
     } else {
       if (datos.edad) {
-        detalle.push(typeof datos.edad === 'number'
-          ? `${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`
-          : this.etiquetaRangoEdad(datos.edad));
+        detalle.push(
+          typeof datos.edad === 'number'
+            ? `${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`
+            : this.etiquetaRangoEdad(datos.edad)
+        );
       }
+
       if (datos.tamanio) {
         detalle.push(datos.tamanio);
       }
+
       if (datos.lugarEncontrado) {
         detalle.push(datos.lugarEncontrado);
       }
@@ -233,8 +311,10 @@ export class PaginaPrincipalPage implements OnDestroy {
       adulto: 'Adulto (2-6 años)',
       mayor: 'Mayor (6+ años)'
     };
+
     return etiquetas[rango];
   }
+
   estadoPublicacion(publicacion: Publicacion): string {
     return publicacion.caso === 'hogar'
       ? 'Disponible para adopción'
@@ -260,6 +340,7 @@ export class PaginaPrincipalPage implements OnDestroy {
       this.historiaActual += 1;
       return;
     }
+
     this.vista = 'dashboard';
   }
 
@@ -274,18 +355,31 @@ export class PaginaPrincipalPage implements OnDestroy {
   }
 
   aplicarFiltros(filtros: FiltrosMascotas): void {
-    this.criteriosFiltro.set({ ...filtros, ubicacion: filtros.ubicacion.trim() });
+    this.criteriosFiltro.set({
+      ...filtros,
+      ubicacion: filtros.ubicacion.trim()
+    });
+
     this.filtrosAbiertos.set(false);
   }
 
   private cargarPublicaciones(): void {
     this.errorPublicaciones.set('');
+
     try {
-      this.publicaciones.set(this.publicacionesService.listarPublicaciones());
+      this.publicaciones.set(
+        this.publicacionesService.listarPublicaciones()
+      );
     } catch (error) {
-      console.error('No se pudieron cargar las publicaciones del dispositivo.', error);
+      console.error(
+        'No se pudieron cargar las publicaciones del dispositivo.',
+        error
+      );
+
       this.publicaciones.set([]);
-      this.errorPublicaciones.set('No se pudieron cargar las publicaciones guardadas en este dispositivo.');
+      this.errorPublicaciones.set(
+        'No se pudieron cargar las publicaciones guardadas en este dispositivo.'
+      );
     }
   }
 }
