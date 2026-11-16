@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
@@ -29,6 +30,13 @@ interface PerfilGuardado {
   direccion: string;
   foto: string;
 }
+=======
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { IonContent, IonIcon } from '@ionic/angular';
+import { addIcons } from 'ionicons';
+import { arrowBackOutline, personCircleOutline } from 'ionicons/icons';
+>>>>>>> 2be0092c7fee72940cd976f93262ededf845c983
 
 @Component({
   selector: 'app-perfil',
@@ -38,6 +46,7 @@ interface PerfilGuardado {
   imports: [IonContent, IonIcon, RouterLink]
 })
 export class PerfilPage {
+<<<<<<< HEAD
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
@@ -394,5 +403,9 @@ export class PerfilPage {
 
     contexto.drawImage(imagen, 0, 0, canvas.width, canvas.height);
     return canvas.toDataURL('image/jpeg', 0.82);
+=======
+  constructor() {
+    addIcons({ arrowBackOutline, personCircleOutline });
+>>>>>>> 2be0092c7fee72940cd976f93262ededf845c983
   }
 }
