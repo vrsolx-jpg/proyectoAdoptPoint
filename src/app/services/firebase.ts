@@ -1,22 +1,11 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore'; 
+import { environment } from '../../environments/environment';// Asegúrate de que esta ruta llegue a tu environment.ts
 
-@Injectable({
-  providedIn: 'root'
-})
-export class FirebaseService {
-  
-  // AQUÍ VA TU URL EXACTA
-  // Nota cómo termina en /usuarios.json para crear esa colección en tu base de datos
-  private url = 'https://adoptpoint-default-rtdb.firebaseio.com/usuarios.json';
+// Inicializa Firebase con tus credenciales
+const app = initializeApp(environment.firebase);
 
-  constructor(private http: HttpClient) { }
-
-  // Esta función envía la información a la URL de arriba
-  guardarDatos(datos: any) {
-    this.http.post(this.url, datos).subscribe({
-      next: (respuesta) => console.log('¡Guardado exitoso en Firebase!', respuesta),
-      error: (error) => console.error('Hubo un error', error)
-    });
-  }
-}
+// Exporta los servicios para usarlos en el resto de la app
+export const auth = getAuth(app);
+export const db = getFirestore(app);
