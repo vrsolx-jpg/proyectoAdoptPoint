@@ -59,9 +59,10 @@ export class AuthService {
     );
   }
 
-  async iniciarConGoogle(): Promise<UserCredential> {
-    await this.persistenceReady;
-    return signInWithPopup(auth, new GoogleAuthProvider());
+  iniciarConGoogle(): Promise<UserCredential> {
+    const proveedor = new GoogleAuthProvider();
+    proveedor.setCustomParameters({ prompt: 'select_account' });
+    return signInWithPopup(auth, proveedor);
   }
 
   cerrarSesion() {

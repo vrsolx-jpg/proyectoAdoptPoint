@@ -143,14 +143,7 @@ filtrarNombre(event: CustomEvent) {
     }
 
     try {
-      const credencial = await this.authService.iniciarConGoogle();
-      if (credencial.user.displayName) {
-        this.authService.guardarNombreRegistrado(
-          credencial.user.email ?? '',
-          credencial.user.displayName
-        );
-      }
-      await this.router.navigate(['/paginaprincipal']);
+      await this.authService.iniciarConGoogle();
     } catch (error) {
       console.error('Error al registrar con Google.', error);
       this.mensaje = 'No se pudo crear la cuenta con Google.';

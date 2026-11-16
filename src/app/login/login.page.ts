@@ -69,7 +69,6 @@ export class LoginPage {
   async iniciarConGoogle(): Promise<void> {
     try {
       await this.authService.iniciarConGoogle();
-      await this.router.navigate(['/paginaprincipal']);
     } catch (error) {
       console.error('Error al iniciar sesión con Google.', error);
       await this.mostrarErrorGoogle(error);

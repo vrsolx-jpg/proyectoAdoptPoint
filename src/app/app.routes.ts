@@ -27,12 +27,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./perfil/perfil.page').then((m) => m.PerfilPage)
   },
-<<<<<<< HEAD
   {
     path: 'publicar',
     loadComponent: () =>
       import('./publicar/publicar.page').then((m) => m.PublicarPage)
   },
-=======
->>>>>>> 2be0092c7fee72940cd976f93262ededf845c983
 ];
