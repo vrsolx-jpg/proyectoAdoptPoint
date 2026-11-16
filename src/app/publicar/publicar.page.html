@@ -1,0 +1,308 @@
+<ion-content [fullscreen]="true" class="publicar-pagina">
+  <main class="publicar-contenido">
+    <header class="encabezado-publicar">
+      <a routerLink="/perfil" class="boton-regresar" aria-label="Volver al perfil">
+        <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+      </a>
+      <h1>Publicar mascota</h1>
+      <a routerLink="/perfil" class="boton-cancelar">Cancelar</a>
+    </header>
+
+    <section class="seleccion-caso" aria-labelledby="titulo-caso">
+      <h2 id="titulo-caso">¿Qué deseas publicar?</h2>
+      <p>Selecciona el caso que mejor describe al animal.</p>
+      <div class="casos">
+        <button class="tarjeta-caso" type="button" [class.seleccionado]="caso === 'hogar'"
+          [attr.aria-pressed]="caso === 'hogar'" (click)="seleccionarCaso('hogar')">
+          <span class="icono-caso hogar">
+            <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
+          </span>
+          <span>
+            <strong>Animal de casa</strong>
+            <small>Dar en adopción un animal propio</small>
+          </span>
+          <ion-icon class="marca-caso" name="checkmark-outline" aria-hidden="true"></ion-icon>
+        </button>
+        <button class="tarjeta-caso" type="button" [class.seleccionado]="caso === 'encontrado'"
+          [attr.aria-pressed]="caso === 'encontrado'" (click)="seleccionarCaso('encontrado')">
+          <span class="icono-caso encontrado">
+            <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+          </span>
+          <span>
+            <strong>Animal encontrado</strong>
+            <small>Reportar un animal en la calle</small>
+          </span>
+          <ion-icon class="marca-caso" name="checkmark-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </div>
+    </section>
+
+    @if (caso) {
+      <section class="formulario-publicacion"
+        [attr.aria-labelledby]="caso === 'hogar' ? 'titulo-gato' : 'titulo-encontrado'">
+        <div class="encabezado-formulario">
+          <div>
+            <p class="etiqueta-seccion">{{ caso === 'hogar' ? 'EN ADOPCIÓN' : 'AYUDA A ENCONTRARLO' }}</p>
+            <h2 [id]="caso === 'hogar' ? 'titulo-animal' : 'titulo-encontrado'">
+              {{ caso === 'hogar' ? 'Cuéntanos sobre tu animal' : 'Datos del hallazgo' }}
+            </h2>
+          </div>
+          <button type="button" class="cambiar-caso" (click)="caso = null; mensaje = ''">
+            Cambiar caso
+          </button>
+        </div>
+
+        <section class="campo fotos" aria-labelledby="titulo-fotos">
+          <div class="etiqueta-con-ayuda">
+            <label id="titulo-fotos">Fotos <span class="opcional">— Opcional</span></label>
+            <span>{{ fotos.length }}/3</span>
+          </div>
+          <input #selectorFotos class="entrada-fotos" type="file" accept="image/*" multiple
+            (change)="seleccionarFotos($event)">
+          <div class="rejilla-fotos">
+            @for (foto of fotos; track foto.id) {
+              <div class="foto-seleccionada">
+                <img [src]="foto.datos" alt="Foto seleccionada para la publicación">
+                @if ($index === 0) {
+                  <span class="portada">Portada</span>
+                }
+                <button type="button" class="quitar-foto" aria-label="Quitar foto"
+                  (click)="quitarFoto(foto.id)">
+                  <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+                </button>
+              </div>
+            }
+            @for (espacio of espaciosFotos.slice(fotos.length); track espacio) {
+              <button type="button" class="agregar-foto" [class.secundario]="$index > 0"
+                (click)="selectorFotos.click()">
+                <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+                <span>Agregar foto</span>
+              </button>
+            }
+          </div>
+          <p class="ayuda-fotos">Puedes agregar hasta 3 fotos. Una buena imagen ayuda a encontrar un hogar.</p>
+        </section>
+
+        @if (caso === 'hogar') {
+          <div class="campos">
+            <section class="campo">
+              <label for="nombre-gato">Nombre</label>
+              <input id="nombre-gato" name="nombreGato" type="text" maxlength="40"
+                placeholder="Nombre de la mascota" [(ngModel)]="nombre" [disabled]="sinNombre">
+              <div class="contador">{{ nombre.length }}/40</div>
+              <label class="casilla">
+                <input type="checkbox" name="sinNombre" [(ngModel)]="sinNombre">
+                <span>Todavía no tiene nombre</span>
+              </label>
+            </section>
+
+            <section class="campo">
+              <label>Especie</label>
+              <div class="chips">
+                @for (especie of especies; track especie) {
+                  <button type="button" class="chip" [class.seleccionado]="especieCasa === especie"
+                    [attr.aria-pressed]="especieCasa === especie" (click)="especieCasa = especie">
+                    <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+                    {{ especie }}
+                  </button>
+                }
+              </div>
+              @if (especieCasa === 'Otro') {
+                <input class="campo-extra" name="otraEspecieCasa" type="text" maxlength="50"
+                  placeholder="¿Qué animal es?" [(ngModel)]="otraEspecieCasa">
+              }
+            </section>
+
+            <section class="campo">
+              <label for="raza">Raza <span class="opcional">— Opcional</span></label>
+              <input id="raza" name="raza" type="text" maxlength="60"
+                placeholder="Ej.: Labrador, mestizo, siamés" [(ngModel)]="raza">
+            </section>
+
+            <section class="campo">
+              <label for="edad">Edad (años)</label>
+              <input id="edad" name="edad" type="number" min="0" max="40" step="0.5"
+                placeholder="Ej.: 3" [(ngModel)]="edad">
+            </section>
+
+            <section class="campo">
+              <label>Tamaño <span class="opcional">— Opcional</span></label>
+              <div class="chips">
+                @for (tamano of tamanos; track tamano) {
+                  <button type="button" class="chip" [class.seleccionado]="tamanio === tamano"
+                    [attr.aria-pressed]="tamanio === tamano" (click)="tamanio = tamano">
+                    {{ tamano }}
+                  </button>
+                }
+              </div>
+            </section>
+
+            <section class="campo">
+              <label for="descripcion-animal">Descripción</label>
+              <textarea id="descripcion-animal" name="descripcionAnimal" rows="4" maxlength="1000"
+                placeholder="Describe su personalidad, cuidados y qué hogar necesita..."
+                [(ngModel)]="descripcion"></textarea>
+            </section>
+
+            <section class="campo">
+              <label>Esterilizado</label>
+              <div class="chips">
+                <button type="button" class="chip" [class.seleccionado]="esterilizado === true"
+                  [attr.aria-pressed]="esterilizado === true" (click)="esterilizado = true">Sí</button>
+                <button type="button" class="chip" [class.seleccionado]="esterilizado === false"
+                  [attr.aria-pressed]="esterilizado === false" (click)="esterilizado = false">No</button>
+              </div>
+            </section>
+
+            <section class="campo">
+              <label>Sexo <span class="opcional">— Opcional</span></label>
+              <div class="chips">
+                <button type="button" class="chip" [class.seleccionado]="sexo === 'Macho'"
+                  [attr.aria-pressed]="sexo === 'Macho'" (click)="sexo = 'Macho'">Macho</button>
+                <button type="button" class="chip" [class.seleccionado]="sexo === 'Hembra'"
+                  [attr.aria-pressed]="sexo === 'Hembra'" (click)="sexo = 'Hembra'">Hembra</button>
+              </div>
+            </section>
+
+            <section class="campo">
+              <label>Vacunado <span class="opcional">— Opcional</span></label>
+              <div class="chips">
+                <button type="button" class="chip" [class.seleccionado]="vacunado === true"
+                  [attr.aria-pressed]="vacunado === true" (click)="vacunado = true">Sí</button>
+                <button type="button" class="chip" [class.seleccionado]="vacunado === false"
+                  [attr.aria-pressed]="vacunado === false" (click)="vacunado = false">No</button>
+              </div>
+            </section>
+
+            <section class="campo">
+              <label>Desparasitado <span class="opcional">— Opcional</span></label>
+              <div class="chips">
+                <button type="button" class="chip" [class.seleccionado]="desparasitado === true"
+                  [attr.aria-pressed]="desparasitado === true" (click)="desparasitado = true">Sí</button>
+                <button type="button" class="chip" [class.seleccionado]="desparasitado === false"
+                  [attr.aria-pressed]="desparasitado === false" (click)="desparasitado = false">No</button>
+              </div>
+            </section>
+
+            <section class="campo">
+              <label for="peso">Peso (kg) <span class="opcional">— Opcional</span></label>
+              <input id="peso" name="peso" type="number" min="0" max="100" step="0.1"
+                placeholder="Ej.: 4.5" [(ngModel)]="peso">
+            </section>
+
+            <section class="campo">
+              <label for="color">Color <span class="opcional">— Opcional</span></label>
+              <input id="color" name="color" type="text" maxlength="80"
+                placeholder="Ej.: blanco con manchas naranjas" [(ngModel)]="color">
+            </section>
+
+            <section class="campo">
+              <label for="ciudad">Ciudad</label>
+              <input id="ciudad" name="ciudad" type="text" maxlength="80"
+                placeholder="Ej.: Bogotá" [(ngModel)]="ciudad">
+            </section>
+
+            <section class="campo">
+              <label>Compatible con niños <span class="opcional">— Opcional</span></label>
+              <div class="chips">
+                <button type="button" class="chip" [class.seleccionado]="compatibleNinos === true"
+                  [attr.aria-pressed]="compatibleNinos === true" (click)="compatibleNinos = true">Sí</button>
+                <button type="button" class="chip" [class.seleccionado]="compatibleNinos === false"
+                  [attr.aria-pressed]="compatibleNinos === false" (click)="compatibleNinos = false">No</button>
+              </div>
+            </section>
+
+            <section class="campo">
+              <label>Compatible con otras mascotas <span class="opcional">— Opcional</span></label>
+              <div class="chips">
+                <button type="button" class="chip" [class.seleccionado]="compatibleMascotas === true"
+                  [attr.aria-pressed]="compatibleMascotas === true" (click)="compatibleMascotas = true">Sí</button>
+                <button type="button" class="chip" [class.seleccionado]="compatibleMascotas === false"
+                  [attr.aria-pressed]="compatibleMascotas === false" (click)="compatibleMascotas = false">No</button>
+              </div>
+            </section>
+
+            <section class="campo">
+              <label>Entrenado en casa <span class="opcional">— Opcional</span></label>
+              <div class="chips">
+                <button type="button" class="chip" [class.seleccionado]="entrenadoCasa === true"
+                  [attr.aria-pressed]="entrenadoCasa === true" (click)="entrenadoCasa = true">Sí</button>
+                <button type="button" class="chip" [class.seleccionado]="entrenadoCasa === false"
+                  [attr.aria-pressed]="entrenadoCasa === false" (click)="entrenadoCasa = false">No</button>
+              </div>
+            </section>
+
+            <h3 class="subtitulo-formulario">Historial de salud <span class="opcional">— Opcional</span></h3>
+            <section class="campo">
+              <label for="veterinario">Veterinario</label>
+              <input id="veterinario" name="veterinario" type="text" maxlength="100"
+                placeholder="Clínica veterinaria" [(ngModel)]="veterinario">
+            </section>
+            <section class="campo">
+              <label for="ultima-visita">Última visita al veterinario</label>
+              <input id="ultima-visita" name="ultimaVisita" type="date" [(ngModel)]="ultimaVisita">
+            </section>
+            <section class="campo">
+              <label for="proxima-cita">Próxima cita veterinaria</label>
+              <input id="proxima-cita" name="proximaCita" type="date" [(ngModel)]="proximaCita">
+            </section>
+          </div>
+        } @else {
+          <div class="campos">
+            <section class="campo">
+              <label>Tipo de animal</label>
+              <div class="chips">
+                @for (especie of especies; track especie) {
+                  <button type="button" class="chip"
+                    [class.seleccionado]="especieEncontrada === especie"
+                    [attr.aria-pressed]="especieEncontrada === especie"
+                    (click)="especieEncontrada = especie">
+                    <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+                    {{ especie }}
+                  </button>
+                }
+              </div>
+              @if (especieEncontrada === 'Otro') {
+                <input class="campo-extra" name="otraEspecie" type="text" maxlength="50"
+                  placeholder="¿Qué animal es?" [(ngModel)]="otraEspecie">
+              }
+            </section>
+
+            <section class="campo">
+              <label for="fecha-encontrado">¿Cuándo lo encontraste?</label>
+              <input id="fecha-encontrado" name="fechaEncontrado" type="date"
+                [(ngModel)]="fechaEncontrado">
+            </section>
+
+            <section class="campo">
+              <label for="lugar-encontrado">Lugar donde lo encontraste</label>
+              <input id="lugar-encontrado" name="lugarEncontrado" type="text" maxlength="160"
+                placeholder="Barrio, dirección o punto de referencia" [(ngModel)]="lugarEncontrado">
+            </section>
+
+            <section class="campo">
+              <label for="descripcion-encontrado">Descripción breve</label>
+              <textarea id="descripcion-encontrado" name="descripcionEncontrado" rows="4" maxlength="500"
+                placeholder="Describe su apariencia y cómo se encuentra..."
+                [(ngModel)]="descripcionEncontrado"></textarea>
+            </section>
+          </div>
+        }
+
+        @if (mensaje) {
+          <p class="mensaje" [class.exito]="mensajeEsExito"
+            [attr.role]="mensajeEsExito ? 'status' : 'alert'">{{ mensaje }}</p>
+        }
+      </section>
+    }
+  </main>
+
+  @if (caso) {
+    <footer class="barra-publicar">
+      <button type="button" class="boton-publicar" [disabled]="guardando" (click)="publicar()">
+        <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+        {{ guardando ? 'Guardando...' : 'Publicar mascota' }}
+      </button>
+    </footer>
+  }
+</ion-content>

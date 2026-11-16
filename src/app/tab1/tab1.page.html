@@ -1,0 +1,32 @@
+<ion-content [fullscreen]="true" class="bienvenida">
+  <main class="pantalla">
+    <section class="hero" aria-label="Bienvenida a AdoptPoint">
+      <p class="marca">AdoptPoint</p>
+      <p class="huella" aria-hidden="true">✦</p>
+      <img
+        class="animal"
+        src="assets/img/gato-adoptpoint.png"
+        alt="Gato negro sosteniendo un pez de juguete">
+    </section>
+
+    <section class="contenido">
+      <h1>Un hogar empieza<br>con un encuentro</h1>
+      <p>Encuentra a tu compañero ideal y dale la oportunidad de conocer el amor de un hogar.</p>
+
+      <button
+        type="button"
+        class="boton-deslizante"
+        aria-label="Desliza para comenzar"
+        (pointerdown)="iniciarDeslizamiento($event)"
+        (pointermove)="moverDeslizador($event)"
+        (pointerup)="finalizarDeslizamiento($event)"
+        (pointercancel)="cancelarDeslizamiento()"
+        (click)="activarAcceso()">
+        <span class="texto-deslizante">Desliza para comenzar</span>
+        <span class="control-deslizante" aria-hidden="true">
+          <ion-icon name="paw-outline"></ion-icon>
+        </span>
+      </button>
+    </section>
+  </main>
+</ion-content>
