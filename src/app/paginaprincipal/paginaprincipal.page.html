@@ -3,10 +3,15 @@
     @if (vista === 'historias') {
       <header class="encabezado">
         <div class="perfil">
-          <div class="avatar">AP</div>
+          <div class="avatar">
+            @if (usuario()?.photoURL) {
+              <img [src]="usuario()!.photoURL" [alt]="'Foto de ' + nombreUsuario">
+            } @else {
+              <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+            }
+          </div>
           <div>
-            <p class="saludo">Buenos días,</p>
-            <h1>AdoptPoint <span aria-hidden="true">🐾</span></h1>
+            <p class="saludo">Bienvenida de vuelta {{ nombreUsuario }}!</p>
           </div>
         </div>
         <button class="boton-notificaciones" type="button" aria-label="Notificaciones">
@@ -42,9 +47,17 @@
       </section>
     } @else {
       <header class="encabezado dashboard-encabezado">
-        <div>
-          <p class="saludo">Explora nuevas historias</p>
-          <h1>Encuentra un amigo <span aria-hidden="true">🐾</span></h1>
+        <div class="perfil">
+          <div class="avatar">
+            @if (usuario()?.photoURL) {
+              <img [src]="usuario()!.photoURL" [alt]="'Foto de ' + nombreUsuario">
+            } @else {
+              <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+            }
+          </div>
+          <div>
+            <p class="saludo">Bienvenida de vuelta {{ nombreUsuario }}!</p>
+          </div>
         </div>
         <button class="boton-notificaciones" type="button" aria-label="Notificaciones">
           <ion-icon name="notifications-outline"></ion-icon>
@@ -120,9 +133,9 @@
       <ion-icon name="home-outline" aria-hidden="true"></ion-icon>
       <span>Inicio</span>
     </a>
-    <button class="pestana" type="button" aria-label="Buscar mascotas">
-      <ion-icon name="search-outline" aria-hidden="true"></ion-icon>
-      <span>Buscar</span>
+    <button class="pestana publicar" type="button" aria-label="Publicar">
+      <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
+      <span>Publicar</span>
     </button>
     <a class="pestana" routerLink="/perfil" aria-label="Abrir perfil de usuario">
       <ion-icon name="person-outline" aria-hidden="true"></ion-icon>

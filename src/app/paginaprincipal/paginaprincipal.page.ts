@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, signal } from '@angular/core';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
+import { User } from 'firebase/auth';
+import { AuthService } from '../auth.service';
 import {
   heartOutline,
   imageOutline,
@@ -10,7 +12,9 @@ import {
   pawOutline,
   searchOutline,
   homeOutline,
-  personOutline
+  personOutline,
+  addOutline,
+  personCircleOutline
 } from 'ionicons/icons';
 
 type Vista = 'historias' | 'dashboard';
@@ -35,9 +39,11 @@ interface Categoria {
   standalone: true,
   imports: [IonContent, IonIcon, RouterLink]
 })
-export class PaginaPrincipalPage {
+export class PaginaPrincipalPage implements OnDestroy {
   vista: Vista = 'historias';
   historiaActual = 0;
+  readonly usuario = signal<User | null>(null);
+  private detenerObservador: (() => void) | undefined;
 
   readonly historias: Historia[] = [
     { nombre: 'Coco', tipo: 'Perro', imagen: 'assets/img/perro.jpg', alt: 'Perro disponible para adopción' },
@@ -52,7 +58,10 @@ export class PaginaPrincipalPage {
     { nombre: 'Otros', icono: 'paw-outline', seleccionada: false }
   ];
 
-  constructor() {
+  constructor(private readonly authService: AuthService) {
+    const usuarioActual = this.authService.obtenerUsuarioActual();
+    this.usuario.set(usuarioActual);
+
     addIcons({
       heartOutline,
       imageOutline,
@@ -61,8 +70,28 @@ export class PaginaPrincipalPage {
       pawOutline,
       searchOutline,
       homeOutline,
-      personOutline
+      personOutline,
+      addOutline,
+      personCircleOutline
     });
+
+    this.detenerObservador = this.authService.observarSesion((usuario) => {
+      this.usuario.set(usuario);
+    });
+  }
+
+  get nombreUsuario(): string {
+    const usuario = this.usuario();
+    const nombreRegistrado = this.authService.obtenerNombreRegistrado(usuario);
+    const nombre = nombreRegistrado
+      || usuario?.displayName?.trim()
+      || 'Hola';
+
+    return nombre.split(/\s+/)[0];
+  }
+
+  ngOnDestroy(): void {
+    this.detenerObservador?.();
   }
 
   siguienteHistoria(): void {

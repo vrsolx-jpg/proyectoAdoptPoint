@@ -1,0 +1,38 @@
+.pantalla-carga {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  place-items: center;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #fff;
+}
+
+.pantalla-carga img {
+  width: min(52vw, 220px);
+  height: auto;
+  animation: aparecer-logo 900ms ease-in-out;
+}
+
+.pantalla-carga h1 {
+  margin: 0;
+  color: #ff8800;
+  font-family: 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
+  font-size: 32px;
+  text-align: center;
+}
+
+@keyframes aparecer-logo {
+  from {
+    opacity: 0;
+    transform: scale(.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

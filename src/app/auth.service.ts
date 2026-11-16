@@ -9,7 +9,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   updateProfile,
-  UserCredential
+  UserCredential,
+  browserLocalPersistence,
+  setPersistence
 } from 'firebase/auth';
 import { auth } from './firebase';
 
@@ -17,18 +19,48 @@ import { auth } from './firebase';
   providedIn: 'root'
 })
 export class AuthService {
+  private readonly persistenceReady = setPersistence(auth, browserLocalPersistence);
+
+  obtenerUsuarioActual(): User | null {
+    return auth.currentUser;
+  }
+
+  async prepararSesion(): Promise<void> {
+    await this.persistenceReady;
+  }
 
   async registrar(email: string, password: string, nombre: string): Promise<UserCredential> {
+    await this.persistenceReady;
     const credencial = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(credencial.user, { displayName: nombre });
+    this.guardarNombreRegistrado(email, nombre);
     return credencial;
   }
 
-  iniciarSesion(email: string, password: string) {
-    return signInWithEmailAndPassword(auth, email, password);
+  guardarNombreRegistrado(email: string, nombre: string): void {
+    if (!email.trim() || !nombre.trim()) {
+      return;
+    }
+
+    localStorage.setItem(`adoptpoint:nombre:${email.trim().toLowerCase()}`, nombre.trim());
   }
 
-  iniciarConGoogle(): Promise<UserCredential> {
+  obtenerNombreRegistrado(user: User | null): string | null {
+    if (!user?.email) {
+      return null;
+    }
+
+    return localStorage.getItem(`adoptpoint:nombre:${user.email.trim().toLowerCase()}`);
+  }
+
+  iniciarSesion(email: string, password: string) {
+    return this.persistenceReady.then(() =>
+      signInWithEmailAndPassword(auth, email, password)
+    );
+  }
+
+  async iniciarConGoogle(): Promise<UserCredential> {
+    await this.persistenceReady;
     return signInWithPopup(auth, new GoogleAuthProvider());
   }
 
