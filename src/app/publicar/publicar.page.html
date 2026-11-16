@@ -5,7 +5,6 @@
         <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
       </a>
       <h1>Publicar mascota</h1>
-      <a routerLink="/paginaprincipal" class="boton-cancelar">Cancelar</a>
     </header>
 
     <section class="seleccion-caso" aria-labelledby="titulo-caso">
@@ -29,7 +28,7 @@
             <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
           </span>
           <span>
-            <strong>Animal encontrado</strong>
+            <strong>Animal reportado</strong>
             <small>Reportar un animal en la calle</small>
           </span>
           <ion-icon class="marca-caso" name="checkmark-outline" aria-hidden="true"></ion-icon>
@@ -72,15 +71,21 @@
                 </button>
               </div>
             }
-            @for (espacio of espaciosFotos.slice(fotos.length); track espacio) {
-              <button type="button" class="agregar-foto" [class.secundario]="$index > 0"
+            @if (!fotos.length) {
+              <button type="button" class="agregar-foto"
                 (click)="selectorFotos.click()">
                 <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
                 <span>Agregar foto</span>
               </button>
+            } @else if (fotos.length < 3) {
+              <button type="button" class="agregar-foto boton-mas-foto"
+                aria-label="Agregar otra foto" (click)="selectorFotos.click()">
+                <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
+                <span>Agregar otra</span>
+              </button>
             }
           </div>
-          <p class="ayuda-fotos">Puedes agregar hasta 3 fotos. Una buena imagen ayuda a encontrar un hogar.</p>
+          <p class="ayuda-fotos">Puedes agregar hasta 3 fotos. Ajusta cada imagen antes de publicarla.</p>
         </section>
 
         @if (caso === 'hogar') {
@@ -285,6 +290,54 @@
               <textarea id="descripcion-encontrado" name="descripcionEncontrado" rows="4" maxlength="500"
                 placeholder="Describe su apariencia y cómo se encuentra..."
                 [(ngModel)]="descripcionEncontrado"></textarea>
+            </section>
+          </div>
+        }
+
+        @if (fotoParaRecortar) {
+          <div class="fondo-recorte" role="presentation">
+            <section class="editor-recorte" role="dialog" aria-modal="true" aria-labelledby="titulo-recorte">
+              <div class="encabezado-recorte">
+                <div>
+                  <p class="etiqueta-seccion">AJUSTA TU FOTO</p>
+                  <h2 id="titulo-recorte">Recortar imagen</h2>
+                </div>
+                <button type="button" class="cerrar-recorte" aria-label="Cancelar recorte"
+                  (click)="cancelarRecorte()">
+                  <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+                </button>
+              </div>
+
+              <div class="marco-recorte">
+                @if (recorteCargando) {
+                  <span class="cargando-recorte">Cargando foto...</span>
+                } @else {
+                  <img [src]="fotoParaRecortar" alt="Vista previa de la foto a recortar"
+                  [style.transform]="'scale(' + zoomRecorte + ')'"
+                  [style.object-position]="(50 + posicionXRecorte / 2) + '% ' + (50 + posicionYRecorte / 2) + '%'">
+                }
+              </div>
+              <p class="ayuda-recorte">Usa los controles para acercar y elegir qué parte de la foto mostrar.</p>
+              <label class="control-recorte">
+                <span>Zoom</span>
+                <input type="range" min="1" max="3" step="0.05" [value]="zoomRecorte"
+                  (input)="actualizarZoom($event)">
+              </label>
+              <label class="control-recorte">
+                <span>Horizontal</span>
+                <input type="range" min="-100" max="100" step="1" [value]="posicionXRecorte"
+                  (input)="actualizarPosicionX($event)">
+              </label>
+              <label class="control-recorte">
+                <span>Vertical</span>
+                <input type="range" min="-100" max="100" step="1" [value]="posicionYRecorte"
+                  (input)="actualizarPosicionY($event)">
+              </label>
+              <div class="acciones-recorte">
+                <button type="button" class="boton-secundario-recorte" (click)="cancelarRecorte()">Cancelar</button>
+                <button type="button" class="boton-confirmar-recorte" [disabled]="recorteCargando"
+                  (click)="confirmarRecorte()">Usar esta foto</button>
+              </div>
             </section>
           </div>
         }

@@ -24,6 +24,7 @@ import {
 } from 'ionicons/icons';
 import { auth } from '../firebase';
 import { AuthService } from '../auth.service';
+import { Publicacion, PublicacionesService } from '../services/publicaciones.service';
 
 interface PerfilGuardado {
   direccion: string;
@@ -40,6 +41,7 @@ interface PerfilGuardado {
 export class PerfilPage {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly publicacionesService = inject(PublicacionesService);
 
   nombre = auth.currentUser?.displayName || 'Usuario AdoptPoint';
   correo = auth.currentUser?.email || '';
@@ -48,7 +50,7 @@ export class PerfilPage {
   nombreTemporal = this.nombre;
   direccionTemporal = '';
   readonly cantidadAdopciones = 0;
-  readonly cantidadPublicaciones = 0;
+  publicaciones: Publicacion[] = [];
 
   editandoNombre = false;
   guardandoNombre = false;
@@ -88,6 +90,41 @@ export class PerfilPage {
     });
 
     this.cargarPerfil();
+    this.cargarPublicaciones();
+  }
+
+  get cantidadPublicaciones(): number {
+    return this.publicaciones.length;
+  }
+
+  tituloPublicacion(publicacion: Publicacion): string {
+    if (publicacion.caso === 'encontrado') {
+      return `${publicacion.datos.especie} encontrado`;
+    }
+
+    return publicacion.datos.nombre?.trim()
+      || `${publicacion.datos.especie} sin nombre`;
+  }
+
+  detallePublicacion(publicacion: Publicacion): string {
+    const datos = publicacion.datos;
+    return datos.ciudad || datos.lugarEncontrado || datos.descripcion;
+  }
+
+  private cargarPublicaciones(): void {
+    const usuario = auth.currentUser;
+    if (!usuario) {
+      this.publicaciones = [];
+      return;
+    }
+
+    try {
+      this.publicaciones = this.publicacionesService.listarPublicaciones()
+        .filter((publicacion) => publicacion.usuarioId === usuario.uid);
+    } catch (error) {
+      console.error('No se pudieron cargar las publicaciones del perfil.', error);
+      this.publicaciones = [];
+    }
   }
 
   async cerrarSesion(): Promise<void> {

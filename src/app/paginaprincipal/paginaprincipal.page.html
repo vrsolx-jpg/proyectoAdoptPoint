@@ -28,14 +28,22 @@
       <p class="error-publicaciones" role="alert">{{ errorPublicaciones() }}</p>
     }
 
+    @if (vista === 'dashboard') {
+      <h2 class="titulo-todas-mascotas">Todas las mascotas</h2>
+    }
+
     @if (publicaciones().length) {
-      <section class="seccion-dashboard publicaciones-recientes" aria-labelledby="titulo-publicaciones">
-        <div class="titulo-seccion">
-          <h2 id="titulo-publicaciones">Publicaciones recientes</h2>
-        </div>
+      <section class="seccion-dashboard publicaciones-recientes" aria-label="Todas las mascotas">
         <div class="rejilla-animales">
           @for (publicacion of publicaciones(); track publicacion.id) {
-            <article class="tarjeta-animal">
+            <article
+              class="tarjeta-animal tarjeta-publicacion"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="'Ver información de ' + tituloPublicacion(publicacion)"
+              (click)="abrirDetalle(publicacion)"
+              (keydown.enter)="abrirDetalle(publicacion)"
+              (keydown.space)="abrirDetalle(publicacion); $event.preventDefault()">
               @if (publicacion.fotos[0]) {
                 <div class="imagen-animal">
                   <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
@@ -49,7 +57,7 @@
               <div class="datos-animal">
                 <h3>{{ tituloPublicacion(publicacion) }}</h3>
                 <p>{{ detallePublicacion(publicacion) }}</p>
-                <span>{{ publicacion.caso === 'hogar' ? 'En adopción' : 'Animal encontrado' }}</span>
+                  <span>{{ estadoPublicacion(publicacion) }}</span>
                 <p>{{ publicacion.datos.descripcion }}</p>
               </div>
             </article>
@@ -80,63 +88,63 @@
         <p class="ayuda-historia">Toca la foto para conocer otra mascota</p>
       </section>
     } @else {
-      <nav class="categorias" aria-label="Categorías de mascotas">
-        @for (categoria of categorias; track categoria.nombre) {
-          <button type="button" [class.seleccionada]="categoria.seleccionada"
-            (click)="seleccionarCategoria(categoria.nombre)">
-            <ion-icon [name]="categoria.icono"></ion-icon>
-            <span>{{ categoria.nombre }}</span>
-          </button>
-        }
-      </nav>
-
-      <section class="seccion-dashboard">
-        <div class="titulo-seccion">
-          <h2>Recomendados para ti</h2>
-          <button type="button">Ver todos</button>
-        </div>
-        <div class="rejilla-animales">
-          <article class="tarjeta-animal">
-            <div class="imagen-animal">
-              <img src="assets/img/perro.jpg" alt="Perro disponible para adopción">
-              <button type="button" aria-label="Agregar perro a favoritos">
-                <ion-icon name="heart-outline"></ion-icon>
-              </button>
-            </div>
-            <div class="datos-animal">
-              <h3>Coco</h3>
-              <p>Compañero cariñoso · 2 años</p>
-              <span>Disponible para adopción</span>
-            </div>
-          </article>
-          <article class="tarjeta-animal">
-            <div class="imagen-animal">
-              <img src="assets/img/fili.jpg" alt="Gato disponible para adopción">
-              <button type="button" aria-label="Agregar gato a favoritos">
-                <ion-icon name="heart-outline"></ion-icon>
-              </button>
-            </div>
-            <div class="datos-animal">
-              <h3>Fili</h3>
-              <p>Tranquilo y juguetón · 1 año</p>
-              <span>Disponible para adopción</span>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="seccion-dashboard cerca">
-        <div class="titulo-seccion">
-          <h2>Más mascotas</h2>
-          <button type="button">Ver todos</button>
-        </div>
-        <div class="imagen-pendiente">
-          <ion-icon name="image-outline"></ion-icon>
-          <span>Imagen pendiente</span>
-        </div>
-      </section>
+      <app-tarjetas-mascotas></app-tarjetas-mascotas>
     }
   </main>
+
+  @if (publicacionSeleccionada(); as publicacion) {
+    <div class="fondo-detalle-publicacion" role="presentation" (click)="cerrarDetalle()">
+      <section
+        class="detalle-publicacion"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="'Información de ' + tituloPublicacion(publicacion)"
+        (click)="$event.stopPropagation()">
+        <button class="boton-cerrar-publicacion" type="button" aria-label="Cerrar información"
+          (click)="cerrarDetalle()">
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+        @if (publicacion.fotos[0]) {
+          <img
+            class="imagen-detalle-publicacion"
+            [src]="publicacion.fotos[0]"
+            [alt]="'Foto de ' + tituloPublicacion(publicacion)">
+        } @else {
+          <div class="imagen-pendiente imagen-detalle-publicacion">
+            <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+            <span>Sin foto</span>
+          </div>
+        }
+        <div class="contenido-detalle-publicacion">
+          <span class="estado-detalle">{{ estadoPublicacion(publicacion) }}</span>
+          <h2>{{ tituloPublicacion(publicacion) }}</h2>
+          <p class="resumen-detalle">
+            {{ publicacion.datos.especie }}
+            @if (publicacion.datos.raza) {
+              · {{ publicacion.datos.raza }}
+            }
+            @if (publicacion.datos.edad !== undefined) {
+              · {{ publicacion.datos.edad }} {{ publicacion.datos.edad === 1 ? 'año' : 'años' }}
+            }
+          </p>
+          <p class="descripcion-detalle">{{ publicacion.datos.descripcion }}</p>
+          @if (publicacion.datos.ciudad || publicacion.datos.lugarEncontrado) {
+            <p class="ubicacion-detalle">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              {{ publicacion.datos.ciudad || publicacion.datos.lugarEncontrado }}
+            </p>
+          }
+          <div class="publicador-detalle">
+            <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+            <div>
+              <span>Publicado por</span>
+              <strong>{{ publicadorPublicacion(publicacion) }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
 
   <nav class="barra-pestanas" aria-label="Navegación principal">
     <a class="pestana activa" routerLink="/paginaprincipal" aria-current="page">

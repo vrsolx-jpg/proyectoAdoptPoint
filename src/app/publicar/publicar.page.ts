@@ -5,6 +5,7 @@ import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
+  addOutline,
   cameraOutline,
   checkmarkOutline,
   closeOutline,
@@ -45,6 +46,12 @@ export class PublicarPage {
   mensaje = '';
   mensajeEsExito = false;
   guardando = false;
+  fotoParaRecortar = '';
+  zoomRecorte = 1;
+  posicionXRecorte = 0;
+  posicionYRecorte = 0;
+  private imagenRecorte: HTMLImageElement | null = null;
+  recorteCargando = false;
 
   nombre = '';
   sinNombre = false;
@@ -82,6 +89,7 @@ export class PublicarPage {
   constructor() {
     addIcons({
       arrowBackOutline,
+      addOutline,
       cameraOutline,
       checkmarkOutline,
       closeOutline,
@@ -130,12 +138,47 @@ export class PublicarPage {
       }
 
       try {
-        const datos = await this.prepararFoto(archivo);
-        this.fotos = [...this.fotos, { id: this.siguienteIdFoto++, datos }];
+        await this.abrirEditorRecorte(archivo);
       } catch (error) {
         console.error('No se pudo cargar una foto para la publicación.', error);
         this.mensaje = 'No se pudo procesar una de las fotos seleccionadas.';
       }
+
+    }
+  }
+
+  actualizarZoom(event: Event): void {
+    this.zoomRecorte = Number((event.target as HTMLInputElement).value);
+  }
+
+  actualizarPosicionX(event: Event): void {
+    this.posicionXRecorte = Number((event.target as HTMLInputElement).value);
+  }
+
+  actualizarPosicionY(event: Event): void {
+    this.posicionYRecorte = Number((event.target as HTMLInputElement).value);
+  }
+
+  cancelarRecorte(): void {
+    this.fotoParaRecortar = '';
+    this.imagenRecorte = null;
+    this.recorteCargando = false;
+  }
+
+  async confirmarRecorte(): Promise<void> {
+    if (!this.imagenRecorte) {
+      return;
+    }
+
+    try {
+      const datos = this.generarRecorte(this.imagenRecorte);
+      this.fotos = [...this.fotos, { id: this.siguienteIdFoto++, datos }];
+      this.fotoParaRecortar = '';
+      this.imagenRecorte = null;
+      this.recorteCargando = false;
+    } catch (error) {
+      console.error('No se pudo recortar la foto.', error);
+      this.mensaje = 'No se pudo recortar la foto. Inténtalo nuevamente.';
     }
   }
 
@@ -235,7 +278,7 @@ export class PublicarPage {
     };
   }
 
-  private async prepararFoto(archivo: File): Promise<string> {
+  private async abrirEditorRecorte(archivo: File): Promise<void> {
     const origen = await new Promise<string>((resolve, reject) => {
       const lector = new FileReader();
       lector.onload = () => {
@@ -249,24 +292,55 @@ export class PublicarPage {
       lector.readAsDataURL(archivo);
     });
 
-    const imagen = await new Promise<HTMLImageElement>((resolve, reject) => {
+    this.fotoParaRecortar = origen;
+    this.imagenRecorte = null;
+    this.recorteCargando = true;
+    this.zoomRecorte = 1;
+    this.posicionXRecorte = 0;
+    this.posicionYRecorte = 0;
+
+    await new Promise<void>((resolve, reject) => {
       const elemento = new Image();
-      elemento.onload = () => resolve(elemento);
-      elemento.onerror = () => reject(new Error('El archivo no contiene una imagen válida.'));
+      elemento.onload = () => {
+        this.imagenRecorte = elemento;
+        this.recorteCargando = false;
+        resolve();
+      };
+      elemento.onerror = () => {
+        this.cancelarRecorte();
+        reject(new Error('El archivo no contiene una imagen válida.'));
+      };
       elemento.src = origen;
     });
+  }
 
-    const escala = Math.min(1, 960 / Math.max(imagen.width, imagen.height));
+  private generarRecorte(imagen: HTMLImageElement): string {
+    const lado = Math.min(imagen.width, imagen.height) / this.zoomRecorte;
+    const maxX = imagen.width - lado;
+    const maxY = imagen.height - lado;
+    const origenX = (imagen.width - lado) / 2 + (maxX / 2) * (this.posicionXRecorte / 100);
+    const origenY = (imagen.height - lado) / 2 + (maxY / 2) * (this.posicionYRecorte / 100);
+    const escala = Math.min(1, 960 / lado);
     const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(imagen.width * escala));
-    canvas.height = Math.max(1, Math.round(imagen.height * escala));
+    canvas.width = Math.max(1, Math.round(lado * escala));
+    canvas.height = canvas.width;
 
     const contexto = canvas.getContext('2d');
     if (!contexto) {
       throw new Error('No se pudo preparar la foto.');
     }
 
-    contexto.drawImage(imagen, 0, 0, canvas.width, canvas.height);
+    contexto.drawImage(
+      imagen,
+      origenX,
+      origenY,
+      lado,
+      lado,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
     return canvas.toDataURL('image/jpeg', 0.78);
   }
 }

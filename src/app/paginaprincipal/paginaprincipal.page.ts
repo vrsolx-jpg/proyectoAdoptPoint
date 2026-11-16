@@ -5,8 +5,8 @@ import { addIcons } from 'ionicons';
 import { User } from 'firebase/auth';
 import { AuthService } from '../auth.service';
 import { Publicacion, PublicacionesService } from '../services/publicaciones.service';
+import { TarjetasMascotasComponent } from '../components/tarjetas-mascotas/tarjetas-mascotas.component';
 import {
-  heartOutline,
   imageOutline,
   notificationsOutline,
   optionsOutline,
@@ -15,7 +15,9 @@ import {
   homeOutline,
   personOutline,
   addOutline,
-  personCircleOutline
+  personCircleOutline,
+  closeOutline,
+  locationOutline
 } from 'ionicons/icons';
 
 type Vista = 'historias' | 'dashboard';
@@ -38,14 +40,16 @@ interface Categoria {
   templateUrl: './paginaprincipal.page.html',
   styleUrls: ['./paginaprincipal.page.scss'],
   standalone: true,
-  imports: [IonContent, IonIcon, RouterLink]
+  imports: [IonContent, IonIcon, RouterLink, TarjetasMascotasComponent]
 })
 export class PaginaPrincipalPage implements OnDestroy {
   vista: Vista = 'historias';
   historiaActual = 0;
+  private readonly claveHistoriasVistas = 'adoptpoint:historias-vistas:';
   readonly usuario = signal<User | null>(null);
   readonly publicaciones = signal<Publicacion[]>([]);
   readonly errorPublicaciones = signal('');
+  readonly publicacionSeleccionada = signal<Publicacion | null>(null);
   private readonly publicacionesService = inject(PublicacionesService);
   private detenerObservador: (() => void) | undefined;
 
@@ -67,7 +71,6 @@ export class PaginaPrincipalPage implements OnDestroy {
     this.usuario.set(usuarioActual);
 
     addIcons({
-      heartOutline,
       imageOutline,
       notificationsOutline,
       optionsOutline,
@@ -76,11 +79,14 @@ export class PaginaPrincipalPage implements OnDestroy {
       homeOutline,
       personOutline,
       addOutline,
-      personCircleOutline
+      personCircleOutline,
+      closeOutline,
+      locationOutline
     });
 
     this.detenerObservador = this.authService.observarSesion((usuario) => {
       this.usuario.set(usuario);
+      this.configurarVistaInicial(usuario);
     });
     this.cargarPublicaciones();
   }
@@ -103,6 +109,20 @@ export class PaginaPrincipalPage implements OnDestroy {
     this.cargarPublicaciones();
   }
 
+  private configurarVistaInicial(usuario: User | null): void {
+    if (!usuario) {
+      return;
+    }
+
+    const clave = `${this.claveHistoriasVistas}${usuario.uid}`;
+    if (localStorage.getItem(clave) === 'true') {
+      this.vista = 'dashboard';
+      return;
+    }
+
+    localStorage.setItem(clave, 'true');
+  }
+
   tituloPublicacion(publicacion: Publicacion): string {
     if (publicacion.caso === 'encontrado') {
       return `${publicacion.datos.especie} encontrado`;
@@ -120,9 +140,6 @@ export class PaginaPrincipalPage implements OnDestroy {
       if (datos.raza) {
         detalle.push(datos.raza);
       }
-      if (datos.edad !== undefined) {
-        detalle.push(`${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`);
-      }
       if (datos.ciudad) {
         detalle.push(datos.ciudad);
       }
@@ -130,12 +147,29 @@ export class PaginaPrincipalPage implements OnDestroy {
       if (datos.lugarEncontrado) {
         detalle.push(datos.lugarEncontrado);
       }
-      if (datos.fechaEncontrado) {
-        detalle.push(datos.fechaEncontrado);
-      }
     }
 
     return detalle.join(' · ') || datos.descripcion;
+  }
+
+  estadoPublicacion(publicacion: Publicacion): string {
+    return publicacion.caso === 'hogar'
+      ? 'Disponible para adopción'
+      : 'Animal encontrado';
+  }
+
+  abrirDetalle(publicacion: Publicacion): void {
+    this.publicacionSeleccionada.set(publicacion);
+  }
+
+  cerrarDetalle(): void {
+    this.publicacionSeleccionada.set(null);
+  }
+
+  publicadorPublicacion(publicacion: Publicacion): string {
+    return publicacion.usuarioId === this.usuario()?.uid
+      ? this.nombreUsuario
+      : 'Usuario de AdoptPoint';
   }
 
   siguienteHistoria(): void {
