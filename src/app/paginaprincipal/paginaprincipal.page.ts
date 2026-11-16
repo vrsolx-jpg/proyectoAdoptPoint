@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { User } from 'firebase/auth';
 import { AuthService } from '../auth.service';
-<<<<<<< HEAD
 import { FiltrosComponent } from '../components/filtros/filtros.component';
 import type { FiltrosMascotas } from '../components/filtros/filtros.component';
 import {
@@ -12,10 +11,7 @@ import {
   PublicacionesService,
   RangoEdad
 } from '../services/publicaciones.service';
-=======
-import { Publicacion, PublicacionesService } from '../services/publicaciones.service';
 import { TarjetasMascotasComponent } from '../components/tarjetas-mascotas/tarjetas-mascotas.component';
->>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
 import {
   imageOutline,
   notificationsOutline,
@@ -92,11 +88,7 @@ function normalizarTexto(texto: string): string {
   templateUrl: './paginaprincipal.page.html',
   styleUrls: ['./paginaprincipal.page.scss'],
   standalone: true,
-<<<<<<< HEAD
-  imports: [IonContent, IonIcon, RouterLink, FiltrosComponent]
-=======
-  imports: [IonContent, IonIcon, RouterLink, TarjetasMascotasComponent]
->>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
+  imports: [IonContent, IonIcon, RouterLink, FiltrosComponent,TarjetasMascotasComponent ]
 })
 export class PaginaPrincipalPage implements OnDestroy {
   vista: Vista = 'historias';
@@ -105,7 +97,6 @@ export class PaginaPrincipalPage implements OnDestroy {
   readonly usuario = signal<User | null>(null);
   readonly publicaciones = signal<Publicacion[]>([]);
   readonly errorPublicaciones = signal('');
-<<<<<<< HEAD
   readonly filtrosAbiertos = signal(false);
   readonly criteriosFiltro = signal<FiltrosMascotas>({
     edad: '',
@@ -120,9 +111,7 @@ export class PaginaPrincipalPage implements OnDestroy {
   readonly publicacionesFiltradas = computed(() =>
     filtrarPublicaciones(this.publicaciones(), this.criteriosFiltro())
   );
-=======
   readonly publicacionSeleccionada = signal<Publicacion | null>(null);
->>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
   private readonly publicacionesService = inject(PublicacionesService);
   private detenerObservador: (() => void) | undefined;
 
@@ -160,7 +149,6 @@ export class PaginaPrincipalPage implements OnDestroy {
       this.usuario.set(usuario);
       this.configurarVistaInicial(usuario);
     });
-    this.cargarPublicaciones();
   }
 
   get nombreUsuario(): string {
@@ -175,10 +163,6 @@ export class PaginaPrincipalPage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.detenerObservador?.();
-  }
-
-  ionViewWillEnter(): void {
-    this.cargarPublicaciones();
   }
 
   private configurarVistaInicial(usuario: User | null): void {
@@ -212,7 +196,6 @@ export class PaginaPrincipalPage implements OnDestroy {
       if (datos.raza) {
         detalle.push(datos.raza);
       }
-<<<<<<< HEAD
       if (datos.edad !== undefined) {
         detalle.push(typeof datos.edad === 'number'
           ? `${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`
@@ -224,8 +207,6 @@ export class PaginaPrincipalPage implements OnDestroy {
       if (datos.sexo) {
         detalle.push(datos.sexo);
       }
-=======
->>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
       if (datos.ciudad) {
         detalle.push(datos.ciudad);
       }
@@ -246,7 +227,6 @@ export class PaginaPrincipalPage implements OnDestroy {
     return detalle.join(' · ') || datos.descripcion;
   }
 
-<<<<<<< HEAD
   private etiquetaRangoEdad(rango: RangoEdad): string {
     const etiquetas: Record<RangoEdad, string> = {
       cachorro: 'Cachorro (0-2 años)',
@@ -254,7 +234,7 @@ export class PaginaPrincipalPage implements OnDestroy {
       mayor: 'Mayor (6+ años)'
     };
     return etiquetas[rango];
-=======
+  }
   estadoPublicacion(publicacion: Publicacion): string {
     return publicacion.caso === 'hogar'
       ? 'Disponible para adopción'
@@ -273,7 +253,6 @@ export class PaginaPrincipalPage implements OnDestroy {
     return publicacion.usuarioId === this.usuario()?.uid
       ? this.nombreUsuario
       : 'Usuario de AdoptPoint';
->>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
   }
 
   siguienteHistoria(): void {
