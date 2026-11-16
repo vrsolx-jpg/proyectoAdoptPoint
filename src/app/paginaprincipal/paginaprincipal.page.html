@@ -32,6 +32,7 @@
       <p class="error-publicaciones" role="alert">{{ errorPublicaciones() }}</p>
     }
 
+<<<<<<< HEAD
     @if (publicaciones().length || hayFiltrosActivos()) {
       <section class="seccion-dashboard publicaciones-recientes" aria-labelledby="titulo-publicaciones">
         <div class="titulo-seccion">
@@ -63,6 +64,43 @@
         } @else {
           <p class="sin-resultados" role="status">No hay publicaciones que coincidan con los filtros seleccionados.</p>
         }
+=======
+    @if (vista === 'dashboard') {
+      <h2 class="titulo-todas-mascotas">Todas las mascotas</h2>
+    }
+
+    @if (publicaciones().length) {
+      <section class="seccion-dashboard publicaciones-recientes" aria-label="Todas las mascotas">
+        <div class="rejilla-animales">
+          @for (publicacion of publicaciones(); track publicacion.id) {
+            <article
+              class="tarjeta-animal tarjeta-publicacion"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="'Ver información de ' + tituloPublicacion(publicacion)"
+              (click)="abrirDetalle(publicacion)"
+              (keydown.enter)="abrirDetalle(publicacion)"
+              (keydown.space)="abrirDetalle(publicacion); $event.preventDefault()">
+              @if (publicacion.fotos[0]) {
+                <div class="imagen-animal">
+                  <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
+                </div>
+              } @else {
+                <div class="imagen-pendiente">
+                  <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+                  <span>Sin foto</span>
+                </div>
+              }
+              <div class="datos-animal">
+                <h3>{{ tituloPublicacion(publicacion) }}</h3>
+                <p>{{ detallePublicacion(publicacion) }}</p>
+                  <span>{{ estadoPublicacion(publicacion) }}</span>
+                <p>{{ publicacion.datos.descripcion }}</p>
+              </div>
+            </article>
+          }
+        </div>
+>>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
       </section>
     }
 
@@ -87,6 +125,7 @@
         </button>
         <p class="ayuda-historia">Toca la foto para conocer otra mascota</p>
       </section>
+<<<<<<< HEAD
     } @else if (!hayFiltrosActivos()) {
       <nav class="categorias" aria-label="Categorías de mascotas">
         @for (categoria of categorias; track categoria.nombre) {
@@ -143,8 +182,66 @@
           <span>Imagen pendiente</span>
         </div>
       </section>
+=======
+    } @else {
+      <app-tarjetas-mascotas></app-tarjetas-mascotas>
+>>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
     }
   </main>
+
+  @if (publicacionSeleccionada(); as publicacion) {
+    <div class="fondo-detalle-publicacion" role="presentation" (click)="cerrarDetalle()">
+      <section
+        class="detalle-publicacion"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="'Información de ' + tituloPublicacion(publicacion)"
+        (click)="$event.stopPropagation()">
+        <button class="boton-cerrar-publicacion" type="button" aria-label="Cerrar información"
+          (click)="cerrarDetalle()">
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+        @if (publicacion.fotos[0]) {
+          <img
+            class="imagen-detalle-publicacion"
+            [src]="publicacion.fotos[0]"
+            [alt]="'Foto de ' + tituloPublicacion(publicacion)">
+        } @else {
+          <div class="imagen-pendiente imagen-detalle-publicacion">
+            <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+            <span>Sin foto</span>
+          </div>
+        }
+        <div class="contenido-detalle-publicacion">
+          <span class="estado-detalle">{{ estadoPublicacion(publicacion) }}</span>
+          <h2>{{ tituloPublicacion(publicacion) }}</h2>
+          <p class="resumen-detalle">
+            {{ publicacion.datos.especie }}
+            @if (publicacion.datos.raza) {
+              · {{ publicacion.datos.raza }}
+            }
+            @if (publicacion.datos.edad !== undefined) {
+              · {{ publicacion.datos.edad }} {{ publicacion.datos.edad === 1 ? 'año' : 'años' }}
+            }
+          </p>
+          <p class="descripcion-detalle">{{ publicacion.datos.descripcion }}</p>
+          @if (publicacion.datos.ciudad || publicacion.datos.lugarEncontrado) {
+            <p class="ubicacion-detalle">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              {{ publicacion.datos.ciudad || publicacion.datos.lugarEncontrado }}
+            </p>
+          }
+          <div class="publicador-detalle">
+            <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+            <div>
+              <span>Publicado por</span>
+              <strong>{{ publicadorPublicacion(publicacion) }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
 
   <nav class="barra-pestanas" aria-label="Navegación principal">
     <a class="pestana activa" routerLink="/paginaprincipal" aria-current="page">

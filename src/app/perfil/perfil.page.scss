@@ -350,6 +350,65 @@
   font-size: 11px;
 }
 
+.historial-publicaciones {
+  display: grid;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+.historial-publicacion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 14px;
+  background: #fff7eb;
+}
+
+.historial-publicacion img,
+.historial-sin-foto {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  place-items: center;
+  border-radius: 12px;
+  background: #ffe8c7;
+  color: var(--naranja);
+  object-fit: cover;
+}
+
+.historial-publicacion div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.historial-publicacion strong,
+.historial-publicacion small,
+.historial-publicacion div > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historial-publicacion strong {
+  color: var(--tinta);
+  font-size: 13px;
+}
+
+.historial-publicacion small,
+.historial-publicacion div > span {
+  color: var(--suave);
+  font-size: 10px;
+}
+
+.historial-publicacion div > span {
+  color: var(--naranja);
+  font-weight: 700;
+}
+
 .ayuda-contrasena {
   margin: 8px 0 0;
   color: var(--suave);

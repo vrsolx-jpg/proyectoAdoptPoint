@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { User } from 'firebase/auth';
 import { AuthService } from '../auth.service';
+<<<<<<< HEAD
 import { FiltrosComponent } from '../components/filtros/filtros.component';
 import type { FiltrosMascotas } from '../components/filtros/filtros.component';
 import {
@@ -11,8 +12,11 @@ import {
   PublicacionesService,
   RangoEdad
 } from '../services/publicaciones.service';
+=======
+import { Publicacion, PublicacionesService } from '../services/publicaciones.service';
+import { TarjetasMascotasComponent } from '../components/tarjetas-mascotas/tarjetas-mascotas.component';
+>>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
 import {
-  heartOutline,
   imageOutline,
   notificationsOutline,
   optionsOutline,
@@ -20,7 +24,9 @@ import {
   homeOutline,
   personOutline,
   addOutline,
-  personCircleOutline
+  personCircleOutline,
+  closeOutline,
+  locationOutline
 } from 'ionicons/icons';
 
 type Vista = 'historias' | 'dashboard';
@@ -86,14 +92,20 @@ function normalizarTexto(texto: string): string {
   templateUrl: './paginaprincipal.page.html',
   styleUrls: ['./paginaprincipal.page.scss'],
   standalone: true,
+<<<<<<< HEAD
   imports: [IonContent, IonIcon, RouterLink, FiltrosComponent]
+=======
+  imports: [IonContent, IonIcon, RouterLink, TarjetasMascotasComponent]
+>>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
 })
 export class PaginaPrincipalPage implements OnDestroy {
   vista: Vista = 'historias';
   historiaActual = 0;
+  private readonly claveHistoriasVistas = 'adoptpoint:historias-vistas:';
   readonly usuario = signal<User | null>(null);
   readonly publicaciones = signal<Publicacion[]>([]);
   readonly errorPublicaciones = signal('');
+<<<<<<< HEAD
   readonly filtrosAbiertos = signal(false);
   readonly criteriosFiltro = signal<FiltrosMascotas>({
     edad: '',
@@ -108,6 +120,9 @@ export class PaginaPrincipalPage implements OnDestroy {
   readonly publicacionesFiltradas = computed(() =>
     filtrarPublicaciones(this.publicaciones(), this.criteriosFiltro())
   );
+=======
+  readonly publicacionSeleccionada = signal<Publicacion | null>(null);
+>>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
   private readonly publicacionesService = inject(PublicacionesService);
   private detenerObservador: (() => void) | undefined;
 
@@ -129,7 +144,6 @@ export class PaginaPrincipalPage implements OnDestroy {
     this.usuario.set(usuarioActual);
 
     addIcons({
-      heartOutline,
       imageOutline,
       notificationsOutline,
       optionsOutline,
@@ -137,11 +151,14 @@ export class PaginaPrincipalPage implements OnDestroy {
       homeOutline,
       personOutline,
       addOutline,
-      personCircleOutline
+      personCircleOutline,
+      closeOutline,
+      locationOutline
     });
 
     this.detenerObservador = this.authService.observarSesion((usuario) => {
       this.usuario.set(usuario);
+      this.configurarVistaInicial(usuario);
     });
     this.cargarPublicaciones();
   }
@@ -164,6 +181,20 @@ export class PaginaPrincipalPage implements OnDestroy {
     this.cargarPublicaciones();
   }
 
+  private configurarVistaInicial(usuario: User | null): void {
+    if (!usuario) {
+      return;
+    }
+
+    const clave = `${this.claveHistoriasVistas}${usuario.uid}`;
+    if (localStorage.getItem(clave) === 'true') {
+      this.vista = 'dashboard';
+      return;
+    }
+
+    localStorage.setItem(clave, 'true');
+  }
+
   tituloPublicacion(publicacion: Publicacion): string {
     if (publicacion.caso === 'encontrado') {
       return `${publicacion.datos.especie} encontrado`;
@@ -181,6 +212,7 @@ export class PaginaPrincipalPage implements OnDestroy {
       if (datos.raza) {
         detalle.push(datos.raza);
       }
+<<<<<<< HEAD
       if (datos.edad !== undefined) {
         detalle.push(typeof datos.edad === 'number'
           ? `${datos.edad} ${datos.edad === 1 ? 'año' : 'años'}`
@@ -192,6 +224,8 @@ export class PaginaPrincipalPage implements OnDestroy {
       if (datos.sexo) {
         detalle.push(datos.sexo);
       }
+=======
+>>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
       if (datos.ciudad) {
         detalle.push(datos.ciudad);
       }
@@ -207,14 +241,12 @@ export class PaginaPrincipalPage implements OnDestroy {
       if (datos.lugarEncontrado) {
         detalle.push(datos.lugarEncontrado);
       }
-      if (datos.fechaEncontrado) {
-        detalle.push(datos.fechaEncontrado);
-      }
     }
 
     return detalle.join(' · ') || datos.descripcion;
   }
 
+<<<<<<< HEAD
   private etiquetaRangoEdad(rango: RangoEdad): string {
     const etiquetas: Record<RangoEdad, string> = {
       cachorro: 'Cachorro (0-2 años)',
@@ -222,6 +254,26 @@ export class PaginaPrincipalPage implements OnDestroy {
       mayor: 'Mayor (6+ años)'
     };
     return etiquetas[rango];
+=======
+  estadoPublicacion(publicacion: Publicacion): string {
+    return publicacion.caso === 'hogar'
+      ? 'Disponible para adopción'
+      : 'Animal encontrado';
+  }
+
+  abrirDetalle(publicacion: Publicacion): void {
+    this.publicacionSeleccionada.set(publicacion);
+  }
+
+  cerrarDetalle(): void {
+    this.publicacionSeleccionada.set(null);
+  }
+
+  publicadorPublicacion(publicacion: Publicacion): string {
+    return publicacion.usuarioId === this.usuario()?.uid
+      ? this.nombreUsuario
+      : 'Usuario de AdoptPoint';
+>>>>>>> 8c808ef4dce145c70ab9e9de243d1a00eb302dc1
   }
 
   siguienteHistoria(): void {

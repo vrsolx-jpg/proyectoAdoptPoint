@@ -1,3 +1,67 @@
-<p>
-  tarjetas-mascotas works!
-</p>
+<section class="tarjetas-mascotas" aria-label="Todas las mascotas">
+  <div class="rejilla-mascotas">
+    @for (mascota of mascotas; track mascota.nombre) {
+      <article
+        class="tarjeta-mascota"
+        tabindex="0"
+        role="button"
+        [attr.aria-label]="'Ver información de ' + mascota.nombre"
+        (click)="abrirDetalle(mascota)"
+        (keydown.enter)="abrirDetalle(mascota)"
+        (keydown.space)="abrirDetalle(mascota); $event.preventDefault()">
+        <div class="imagen-mascota">
+          <img [src]="mascota.imagen" [alt]="mascota.alt">
+          <button
+            type="button"
+            class="boton-favorito"
+            [class.seleccionada]="esFavorita(mascota)"
+            [attr.aria-label]="esFavorita(mascota) ? 'Quitar de favoritos' : 'Agregar a favoritos'"
+            (click)="alternarFavorito(mascota, $event)">
+            <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </div>
+        <div class="datos-mascota">
+          <h3>{{ mascota.nombre }}</h3>
+          <p>{{ mascota.descripcion }} · {{ mascota.edad }}</p>
+          <span>Disponible para adopción</span>
+        </div>
+      </article>
+    }
+  </div>
+</section>
+
+@if (mascotaSeleccionada; as mascota) {
+  <div class="fondo-detalle" role="presentation" (click)="cerrarDetalle()">
+    <section
+      class="detalle-mascota"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="'Información de ' + mascota.nombre"
+      (click)="$event.stopPropagation()">
+      <button class="boton-cerrar" type="button" aria-label="Cerrar información"
+        (click)="cerrarDetalle()">
+        <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+      </button>
+      <img class="detalle-imagen" [src]="mascota.imagen" [alt]="mascota.alt">
+      <div class="detalle-contenido">
+        <p class="etiqueta-detalle">Disponible para adopción</p>
+        <h2>{{ mascota.nombre }}</h2>
+        <p class="tipo-detalle">{{ mascota.especie }} · {{ mascota.edad }}</p>
+        <p class="descripcion-detalle">{{ mascota.descripcion }}</p>
+
+        <div class="publicador">
+          <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+          <div>
+            <span>Publicado por</span>
+            <strong>{{ mascota.publicador }}</strong>
+          </div>
+        </div>
+        <p class="ubicacion">
+          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+          {{ mascota.ubicacion }}
+        </p>
+        <button class="boton-contacto" type="button">{{ mascota.contacto }}</button>
+      </div>
+    </section>
+  </div>
+}

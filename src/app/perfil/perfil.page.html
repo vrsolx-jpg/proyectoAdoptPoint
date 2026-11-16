@@ -70,10 +70,31 @@
             <ion-icon class="flecha-opcion" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
           </button>
           @if (mostrandoHistorial) {
-            <div class="detalle-opcion estado-vacio">
-              <p>Aún no hay publicaciones vinculadas a tu perfil.</p>
-              <span>Cuando publiques un animal, aparecerá aquí.</span>
-            </div>
+            @if (publicaciones.length) {
+              <div class="historial-publicaciones">
+                @for (publicacion of publicaciones; track publicacion.id) {
+                  <article class="historial-publicacion">
+                    @if (publicacion.fotos[0]) {
+                      <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
+                    } @else {
+                      <span class="historial-sin-foto">
+                        <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+                      </span>
+                    }
+                    <div>
+                      <strong>{{ tituloPublicacion(publicacion) }}</strong>
+                      <small>{{ detallePublicacion(publicacion) }}</small>
+                      <span>{{ publicacion.caso === 'hogar' ? 'Disponible para adopción' : 'Animal encontrado' }}</span>
+                    </div>
+                  </article>
+                }
+              </div>
+            } @else {
+              <div class="detalle-opcion estado-vacio">
+                <p>Aún no hay publicaciones vinculadas a tu perfil.</p>
+                <span>Cuando publiques un animal, aparecerá aquí.</span>
+              </div>
+            }
           }
         </section>
 
