@@ -1,236 +1,150 @@
 <ion-content [fullscreen]="true" class="perfil-pagina">
   <main class="perfil-contenido">
-    <a class="boton-volver" routerLink="/paginaprincipal" aria-label="Volver a inicio">
-      <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
-    </a>
-
+    @if (perfil.cargandoPerfil()) {
+      <app-esqueleto vista="perfil" etiqueta="Cargando perfil"></app-esqueleto>
+    } @else {
     <section class="perfil-tarjeta" aria-labelledby="titulo-perfil">
-      <div class="perfil-presentacion">
-        <div class="avatar-contenedor">
-          @if (foto) {
-            <img class="avatar" [src]="foto" alt="Foto de perfil">
-          } @else {
-            <ion-icon class="avatar-predeterminado" name="person-circle-outline" aria-hidden="true"></ion-icon>
-          }
-          <button
-            class="boton-foto"
-            type="button"
-            aria-label="Cambiar foto de perfil"
-            (click)="mostrandoOpcionesFoto = !mostrandoOpcionesFoto">
-            <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
-          </button>
-        </div>
-        <h1 id="titulo-perfil">{{ nombre }}</h1>
-        @if (correo) {
-          <p class="correo">{{ correo }}</p>
-        }
-
-        @if (mostrandoOpcionesFoto) {
-          <div class="opciones-foto" aria-label="Opciones de foto">
-            <input #galeriaInput class="entrada-archivo" type="file" accept="image/*"
-              (change)="seleccionarFoto($event)">
-            <input #camaraInput class="entrada-archivo" type="file" accept="image/*" capture="user"
-              (change)="seleccionarFoto($event)">
-            <button type="button" (click)="galeriaInput.click()">
-              <ion-icon name="image-outline" aria-hidden="true"></ion-icon>
-              Galería
-            </button>
-            <button type="button" (click)="camaraInput.click()">
-              <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
-              Tomar foto
-            </button>
-          </div>
-        }
-      </div>
-
-      <div class="resumen" aria-label="Resumen de actividad">
-        <div class="dato-resumen">
-          <strong>{{ cantidadPublicaciones }}</strong>
-          <span>Publicaciones</span>
-        </div>
-        <div class="separador-resumen" aria-hidden="true"></div>
-        <div class="dato-resumen">
-          <strong>{{ cantidadAdopciones }}</strong>
-          <span>Adopciones</span>
-        </div>
-      </div>
-
-      <div class="opciones-perfil">
-        <section class="opcion">
-          <button class="fila-opcion" type="button"
-            [attr.aria-expanded]="mostrandoHistorial"
-            (click)="mostrandoHistorial = !mostrandoHistorial">
-            <span class="icono-opcion historial">
-              <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-            </span>
-            <span class="texto-opcion">
-              <strong>Historial de publicaciones</strong>
-              <small>Animales que has publicado</small>
-            </span>
-            <ion-icon class="flecha-opcion" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
-          </button>
-          @if (mostrandoHistorial) {
-            @if (publicaciones.length) {
-              <div class="historial-publicaciones">
-                @for (publicacion of publicaciones; track publicacion.id) {
-                  <article class="historial-publicacion">
-                    @if (publicacion.fotos[0]) {
-                      <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
-                    } @else {
-                      <span class="historial-sin-foto">
-                        <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-                      </span>
-                    }
-                    <div>
-                      <strong>{{ tituloPublicacion(publicacion) }}</strong>
-                      <small>{{ detallePublicacion(publicacion) }}</small>
-                      <span>{{ publicacion.caso === 'hogar' ? 'Disponible para adopción' : 'Animal encontrado' }}</span>
-                    </div>
-                  </article>
-                }
-              </div>
-            } @else {
-              <div class="detalle-opcion estado-vacio">
-                <p>Aún no hay publicaciones vinculadas a tu perfil.</p>
-                <span>Cuando publiques un animal, aparecerá aquí.</span>
-              </div>
-            }
-          }
-        </section>
-
-        <section class="seccion-ajustes" aria-labelledby="titulo-ajustes">
-          <button class="encabezado-ajustes" type="button"
-            [class.expandido]="mostrandoAjustes"
-            [attr.aria-expanded]="mostrandoAjustes"
-            aria-controls="lista-ajustes"
-            (click)="alternarAjustes()">
+      <div class="controles-perfil">
+        <a class="boton-circular" routerLink="/paginaprincipal" aria-label="Volver al inicio">
+          <ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon>
+        </a>
+        @if (perfil.usuario()) {
+          <a class="boton-circular" routerLink="/ajustes" aria-label="Ajustes de perfil">
             <ion-icon name="settings-outline" aria-hidden="true"></ion-icon>
-            <div>
-              <h2 id="titulo-ajustes">Ajustes</h2>
-              <p>Administra tu información y seguridad</p>
-            </div>
-            <ion-icon class="flecha-ajustes" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
-          </button>
-
-          @if (mostrandoAjustes) {
-            <div class="ajustes-lista" id="lista-ajustes">
-              <section class="opcion">
-                <button class="fila-opcion" type="button"
-                  [attr.aria-expanded]="editandoDireccion"
-                  (click)="alternarEdicionDireccion()">
-                  <span class="icono-opcion direccion">
-                    <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-                  </span>
-                  <span class="texto-opcion">
-                    <strong>Dirección</strong>
-                    <small>{{ direccion || 'Añade tu dirección' }}</small>
-                  </span>
-                  <ion-icon class="flecha-opcion" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
-                </button>
-                @if (editandoDireccion) {
-                  <div class="detalle-opcion">
-                    <label for="direccion">Tu dirección</label>
-                    <input id="direccion" type="text" maxlength="160" placeholder="Escribe tu dirección"
-                      [value]="direccionTemporal" (input)="actualizarDireccion($event)">
-                    <button class="boton-guardar" type="button" (click)="guardarDireccion()">
-                      <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon>
-                      Guardar dirección
-                    </button>
-                  </div>
-                }
-              </section>
-
-              <section class="opcion">
-                <button class="fila-opcion" type="button"
-                  [attr.aria-expanded]="editandoNombre"
-                  (click)="alternarEdicionNombre()">
-                  <span class="icono-opcion nombre">
-                    <ion-icon name="create-outline" aria-hidden="true"></ion-icon>
-                  </span>
-                  <span class="texto-opcion">
-                    <strong>Nombre</strong>
-                    <small>Modificar tu nombre de perfil</small>
-                  </span>
-                  <ion-icon class="flecha-opcion" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
-                </button>
-                @if (editandoNombre) {
-                  <div class="detalle-opcion">
-                    <label for="nombre">Tu nombre</label>
-                    <input id="nombre" type="text" maxlength="60" autocomplete="name"
-                      [value]="nombreTemporal" (input)="actualizarNombre($event)">
-                    <button class="boton-guardar" type="button" [disabled]="guardandoNombre"
-                      (click)="guardarNombre()">
-                      <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon>
-                      {{ guardandoNombre ? 'Guardando...' : 'Guardar nombre' }}
-                    </button>
-                  </div>
-                }
-              </section>
-
-              <section class="opcion">
-                <button class="fila-opcion" type="button"
-                  [attr.aria-expanded]="editandoContrasena"
-                  (click)="alternarCambioContrasena()">
-                  <span class="icono-opcion contrasena">
-                    <ion-icon name="lock-closed-outline" aria-hidden="true"></ion-icon>
-                  </span>
-                  <span class="texto-opcion">
-                    <strong>Cambiar contraseña</strong>
-                    <small>Actualiza la contraseña de tu cuenta</small>
-                  </span>
-                  <ion-icon class="flecha-opcion" name="chevron-forward-outline" aria-hidden="true"></ion-icon>
-                </button>
-                @if (editandoContrasena) {
-                  <div class="detalle-opcion">
-                    @if (!solicitandoNuevaContrasena) {
-                      <label for="contrasena-actual">Contraseña actual</label>
-                      <input id="contrasena-actual" type="password" autocomplete="current-password"
-                        placeholder="Ingresa tu contraseña actual" [value]="contrasenaActual"
-                        (input)="actualizarCampoContrasena('actual', $event)">
-                      <button class="boton-guardar" type="button" [disabled]="verificandoContrasena"
-                        (click)="verificarContrasenaActual()">
-                        <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon>
-                        {{ verificandoContrasena ? 'Verificando...' : 'Continuar' }}
-                      </button>
-                    } @else {
-                      <label for="contrasena-nueva">Nueva contraseña</label>
-                      <input id="contrasena-nueva" type="password" autocomplete="new-password"
-                        placeholder="Ingresa la nueva contraseña" [value]="contrasenaNueva"
-                        (input)="actualizarCampoContrasena('nueva', $event)">
-                      <label for="confirmar-contrasena" class="etiqueta-confirmacion">
-                        Confirma la nueva contraseña
-                      </label>
-                      <input id="confirmar-contrasena" type="password" autocomplete="new-password"
-                        placeholder="Repite la nueva contraseña" [value]="confirmarContrasenaNueva"
-                        (input)="actualizarCampoContrasena('confirmacion', $event)">
-                      <p class="ayuda-contrasena">
-                        Usa entre 8 y 64 caracteres, con mayúscula, minúscula, número y símbolo.
-                      </p>
-                      <button class="boton-guardar" type="button" [disabled]="actualizandoContrasena"
-                        (click)="guardarNuevaContrasena()">
-                        <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon>
-                        {{ actualizandoContrasena ? 'Actualizando...' : 'Guardar contraseña' }}
-                      </button>
-                    }
-                  </div>
-                }
-              </section>
-            </div>
-          }
-        </section>
+          </a>
+        }
       </div>
-
-      <button class="boton-cerrar-sesion" type="button" [disabled]="cerrandoSesion"
-        (click)="cerrarSesion()">
-        <ion-icon name="log-out-outline" aria-hidden="true"></ion-icon>
-        {{ cerrandoSesion ? 'Cerrando sesión...' : 'Cerrar sesión' }}
-      </button>
-
-      @if (mensaje) {
-        <p class="mensaje" [class.exito]="mensajeEsExito" [attr.role]="mensajeEsExito ? 'status' : 'alert'">
-          {{ mensaje }}
-        </p>
+      <div class="identidad">
+        <div class="avatar-contenedor">
+          @if (perfil.foto(); as foto) {
+            <img class="avatar" [src]="foto" alt="">
+          } @else {
+            <ion-icon class="avatar" name="person-circle-outline" aria-hidden="true"></ion-icon>
+          }
+          @if (perfil.usuario()) {
+            <input #selectorFoto type="file" accept="image/*" hidden (change)="seleccionarFoto($event)">
+            <button class="boton-foto boton-circular" type="button" aria-label="Cambiar foto de perfil"
+              [disabled]="guardandoPerfil()" (click)="selectorFoto.click()">
+              <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+            </button>
+          }
+        </div>
+        <div class="nombre-perfil">
+          <h1 id="titulo-perfil">{{ perfil.usuario() ? perfil.nombre() : 'Mi perfil' }}</h1>
+          @if (perfil.usuario()?.email; as correo) { <p>{{ correo }}</p> }
+          @if (perfil.ciudad(); as ciudad) {
+            <p class="ciudad"><ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ ciudad }}</p>
+          }
+        </div>
+      </div>
+      @if (perfil.usuario()) {
+        <dl class="resumen">
+          <div><dt>Favoritos</dt><dd>{{ favoritas().length }}</dd></div>
+          <div><dt>Publicaciones</dt><dd>{{ publicaciones().length }}</dd></div>
+          <div><dt>Adopciones</dt><dd>{{ adopciones() }}</dd></div>
+        </dl>
       }
     </section>
+
+    @if (perfil.usuario()) {
+      @if (mensaje() || perfil.errorPerfil()) {
+        <p class="mensaje" role="status">{{ mensaje() || perfil.errorPerfil() }}</p>
+      }
+
+      <div class="selector-seccion" aria-label="Actividad">
+        <button type="button" [attr.aria-pressed]="pestana() === 'favoritos'" (click)="pestana.set('favoritos')">
+          <ion-icon name="heart-outline" aria-hidden="true"></ion-icon> Mis favoritos
+        </button>
+        <button type="button" [attr.aria-pressed]="pestana() === 'publicaciones'" (click)="pestana.set('publicaciones')">
+          <ion-icon name="paw-outline" aria-hidden="true"></ion-icon> Mis publicaciones
+        </button>
+      </div>
+
+      @if (publicacionesService.cargando()) {
+        <app-esqueleto etiqueta="Cargando mascotas"></app-esqueleto>
+      } @else if (publicacionesService.error()) {
+        <p class="panel" role="status">{{ publicacionesService.error() }}</p>
+      } @else if (pestana() === 'favoritos') {
+        @if (perfil.errorFavoritos()) {
+          <p class="panel" role="status">{{ perfil.errorFavoritos() }}</p>
+        } @else if (!perfil.favoritosCargados()) {
+          <app-esqueleto etiqueta="Cargando favoritos"></app-esqueleto>
+        } @else if (favoritas().length) {
+          <app-tarjetas-mascotas [publicaciones]="favoritas()" (abrir)="abrirFavorita($event)"></app-tarjetas-mascotas>
+        } @else {
+          <div class="panel estado-vacio">
+            <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
+            <h2>Aún no tienes favoritos</h2>
+            <p>Usa el corazón de una ficha para guardarla aquí.</p>
+            <a class="boton principal" routerLink="/paginaprincipal">Explorar mascotas</a>
+          </div>
+        }
+      } @else {
+        <section aria-label="Mis publicaciones">
+          @if (mensajeEdicion()) { <p class="mensaje" role="status">{{ mensajeEdicion() }}</p> }
+          @for (publicacion of publicaciones(); track publicacion.id) {
+            <article class="panel publicacion">
+              <div class="resumen-publicacion">
+                @if (publicacion.fotos[0]; as foto) {
+                  <img [src]="foto" [alt]="'Foto de ' + tituloPublicacion(publicacion)" loading="lazy">
+                } @else {
+                  <ion-icon class="sin-foto" name="paw-outline" aria-hidden="true"></ion-icon>
+                }
+                <div>
+                  <span class="estado">{{ estadoPublicacion(publicacion) }}</span>
+                  <h2>{{ tituloPublicacion(publicacion) }}</h2>
+                  <p>{{ publicacion.datos.ciudad || publicacion.datos.lugarEncontrado }}</p>
+                </div>
+              </div>
+              <div class="acciones">
+                <button type="button" class="boton" [disabled]="guardandoPublicacion()" (click)="editar(publicacion)">Editar</button>
+                @if (publicacion.caso === 'hogar' && publicacion.estado !== 'adoptada') {
+                  <button type="button" class="boton" [disabled]="guardandoPublicacion()" (click)="marcarAdoptada(publicacion)">Marcar como adoptada</button>
+                }
+                <button type="button" class="boton peligro" [disabled]="guardandoPublicacion() || confirmandoEliminacion()" (click)="confirmarEliminar(publicacion)">Eliminar</button>
+              </div>
+              @if (editando(); as edicion) {
+                @if (edicion.id === publicacion.id) {
+                  <form class="campos-edicion formulario-publicacion" (ngSubmit)="guardarPublicacion(edicion)">
+                    <label>Nombre <input name="nombre" maxlength="40" [(ngModel)]="edicion.nombre"></label>
+                    <label>Especie <input name="especie" required maxlength="50" [(ngModel)]="edicion.especie"></label>
+                    <label>Ciudad <input name="ciudad" required maxlength="80" [(ngModel)]="edicion.ciudad"></label>
+                    <label>Celular <input name="telefono" type="tel" required maxlength="18" placeholder="3001234567" [(ngModel)]="edicion.telefono"></label>
+                    <label>Caso
+                      <select name="caso" [(ngModel)]="edicion.caso">
+                        <option value="hogar">En adopción</option>
+                        <option value="encontrado">Animal encontrado</option>
+                      </select>
+                    </label>
+                    @if (edicion.caso === 'encontrado') {
+                      <label>Lugar del hallazgo <input name="lugar" required maxlength="160" [(ngModel)]="edicion.lugarEncontrado"></label>
+                      <label>Fecha del hallazgo <input name="fecha" type="date" required [(ngModel)]="edicion.fechaEncontrado"></label>
+                    }
+                    <label class="ancho-completo">Descripción <textarea name="descripcion" rows="4" required maxlength="1000" [(ngModel)]="edicion.descripcion"></textarea></label>
+                    <div class="acciones ancho-completo">
+                      <button class="boton principal" type="submit" [disabled]="guardandoPublicacion()">Guardar cambios</button>
+                      <button class="boton" type="button" [disabled]="guardandoPublicacion()" (click)="editando.set(null); mensajeEdicion.set('')">Cancelar</button>
+                    </div>
+                    @if (mensajeEdicion()) { <p class="mensaje ancho-completo">{{ mensajeEdicion() }}</p> }
+                  </form>
+                }
+              }
+            </article>
+          } @empty {
+            <div class="panel estado-vacio">
+              <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
+              <h2>Aún no tienes publicaciones</h2>
+              <a class="boton principal" routerLink="/publicar">Publicar una mascota</a>
+            </div>
+          }
+        </section>
+      }
+      <button type="button" class="boton sesion" (click)="cerrarSesion()" [disabled]="cerrandoSesion()">
+        <ion-icon name="log-out-outline" aria-hidden="true"></ion-icon> Cerrar sesión
+      </button>
+    } @else {
+      <div class="panel estado-vacio"><a class="boton principal" routerLink="/acceso">Iniciar sesión</a></div>
+    }
+    }
   </main>
 </ion-content>

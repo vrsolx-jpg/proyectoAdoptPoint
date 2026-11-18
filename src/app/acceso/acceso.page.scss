@@ -1,6 +1,6 @@
 :host {
-  --naranja-fondo: #FFAA00;
-  --naranja: #FF8800;
+  --naranja-fondo: var(--naranja-adoptpoint);
+  --naranja: var(--naranja-adoptpoint);
   --texto: #30251d;
   --crema: #fffaf4;
 }
@@ -62,7 +62,7 @@
 
 h1 {
   margin: 0 0 13px;
-  color: var(--naranja);
+  color: var(--titulo-adoptpoint);
   font-family: 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
   font-size: clamp(32px, 9vw, 44px);
   line-height: .96;

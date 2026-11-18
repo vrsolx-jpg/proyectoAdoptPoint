@@ -38,7 +38,7 @@
 
     @if (caso) {
       <section class="formulario-publicacion"
-        [attr.aria-labelledby]="caso === 'hogar' ? 'titulo-gato' : 'titulo-encontrado'">
+        [attr.aria-labelledby]="caso === 'hogar' ? 'titulo-animal' : 'titulo-encontrado'">
         <div class="encabezado-formulario">
           <div>
             <p class="etiqueta-seccion">{{ caso === 'hogar' ? 'EN ADOPCIÓN' : 'AYUDA A ENCONTRARLO' }}</p>
@@ -46,7 +46,7 @@
               {{ caso === 'hogar' ? 'Cuéntanos sobre tu animal' : 'Datos del hallazgo' }}
             </h2>
           </div>
-          <button type="button" class="cambiar-caso" (click)="caso = null; mensaje = ''">
+          <button type="button" class="cambiar-caso" (click)="caso = null; mensaje.set('')">
             Cambiar caso
           </button>
         </div>
@@ -54,12 +54,12 @@
         <section class="campo fotos" aria-labelledby="titulo-fotos">
           <div class="etiqueta-con-ayuda">
             <label id="titulo-fotos">Fotos <span class="opcional">— Opcional</span></label>
-            <span>{{ fotos.length }}/3</span>
+            <span>{{ fotos().length }}/3</span>
           </div>
           <input #selectorFotos class="entrada-fotos" type="file" accept="image/*" multiple
             (change)="seleccionarFotos($event)">
           <div class="rejilla-fotos">
-            @for (foto of fotos; track foto.id) {
+            @for (foto of fotos(); track foto.id) {
               <div class="foto-seleccionada">
                 <img [src]="foto.datos" alt="Foto seleccionada para la publicación">
                 @if ($index === 0) {
@@ -71,21 +71,40 @@
                 </button>
               </div>
             }
-            @if (!fotos.length) {
-              <button type="button" class="agregar-foto"
-                (click)="selectorFotos.click()">
-                <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
-                <span>Agregar foto</span>
-              </button>
-            } @else if (fotos.length < 3) {
-              <button type="button" class="agregar-foto boton-mas-foto"
-                aria-label="Agregar otra foto" (click)="selectorFotos.click()">
-                <ion-icon name="add-outline" aria-hidden="true"></ion-icon>
-                <span>Agregar otra</span>
-              </button>
-            }
           </div>
-          <p class="ayuda-fotos">Puedes agregar hasta 3 fotos. Ajusta cada imagen antes de publicarla.</p>
+          @if (fotos().length < 3) {
+            <div class="acciones-fotos">
+              <button type="button" class="agregar-foto" [disabled]="procesandoFotos() || guardando()" (click)="tomarFoto()">
+                <ion-icon name="camera-outline" aria-hidden="true"></ion-icon> Tomar foto
+              </button>
+              <button type="button" class="agregar-foto" [disabled]="procesandoFotos() || guardando()" (click)="abrirGaleria(selectorFotos)">
+                <ion-icon name="image-outline" aria-hidden="true"></ion-icon> Galería
+              </button>
+            </div>
+          }
+          @if (procesandoFotos()) {
+            <p class="ayuda-fotos" role="status">Preparando fotos…</p>
+          }
+        </section>
+
+        <section class="campo">
+          <label for="telefono-publicacion">Celular de contacto <span>— Obligatorio</span></label>
+          <input id="telefono-publicacion" name="telefono" type="tel" inputmode="tel" autocomplete="tel-national"
+            placeholder="3001234567" maxlength="18" required [(ngModel)]="telefono" (ngModelChange)="telefonoEditado = true" aria-describedby="ayuda-telefono">
+          <p id="ayuda-telefono" class="ayuda-fotos">Número colombiano de 10 dígitos. Será visible para que te contacten por WhatsApp.</p>
+        </section>
+
+        <section class="campo">
+          <label for="ciudad">Ciudad <span>— Obligatorio</span></label>
+          <button class="usar-ubicacion" type="button" [disabled]="ubicacion.detectando()" (click)="usarUbicacion()">
+            <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+            {{ ubicacion.detectando() ? 'Detectando ciudad…' : 'Usar mi ubicación' }}
+          </button>
+          <input id="ciudad" name="ciudad" type="text" maxlength="80" required
+            placeholder="Ej.: Bogotá" [(ngModel)]="ciudad" (ngModelChange)="ciudadEditada = true" autocomplete="address-level2">
+          @if (ubicacion.mensaje()) {
+            <p class="ayuda-fotos" role="status">{{ ubicacion.mensaje() }}</p>
+          }
         </section>
 
         @if (caso === 'hogar') {
@@ -209,12 +228,6 @@
             </section>
 
             <section class="campo">
-              <label for="ciudad">Ciudad <span>— Obligatorio</span></label>
-              <input id="ciudad" name="ciudad" type="text" maxlength="80"
-                placeholder="Ej.: Bogotá" [(ngModel)]="ciudad">
-            </section>
-
-            <section class="campo">
               <label>Compatible con niños <span class="opcional">— Opcional</span></label>
               <div class="chips">
                 <button type="button" class="chip" [class.seleccionado]="compatibleNinos === true"
@@ -330,68 +343,21 @@
           </div>
         }
 
-        @if (fotoParaRecortar) {
-          <div class="fondo-recorte" role="presentation">
-            <section class="editor-recorte" role="dialog" aria-modal="true" aria-labelledby="titulo-recorte">
-              <div class="encabezado-recorte">
-                <div>
-                  <p class="etiqueta-seccion">AJUSTA TU FOTO</p>
-                  <h2 id="titulo-recorte">Recortar imagen</h2>
-                </div>
-                <button type="button" class="cerrar-recorte" aria-label="Cancelar recorte"
-                  (click)="cancelarRecorte()">
-                  <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
-                </button>
-              </div>
-
-              <div class="marco-recorte">
-                @if (recorteCargando) {
-                  <span class="cargando-recorte">Cargando foto...</span>
-                } @else {
-                  <img [src]="fotoParaRecortar" alt="Vista previa de la foto a recortar"
-                  [style.transform]="'scale(' + zoomRecorte + ')'"
-                  [style.object-position]="(50 + posicionXRecorte / 2) + '% ' + (50 + posicionYRecorte / 2) + '%'">
-                }
-                <button (click)="publicar()">Publicar</button>
-              </div>
-              <p class="ayuda-recorte">Usa los controles para acercar y elegir qué parte de la foto mostrar.</p>
-              <label class="control-recorte">
-                <span>Zoom</span>
-                <input type="range" min="1" max="3" step="0.05" [value]="zoomRecorte"
-                  (input)="actualizarZoom($event)">
-              </label>
-              <label class="control-recorte">
-                <span>Horizontal</span>
-                <input type="range" min="-100" max="100" step="1" [value]="posicionXRecorte"
-                  (input)="actualizarPosicionX($event)">
-              </label>
-              <label class="control-recorte">
-                <span>Vertical</span>
-                <input type="range" min="-100" max="100" step="1" [value]="posicionYRecorte"
-                  (input)="actualizarPosicionY($event)">
-              </label>
-              <div class="acciones-recorte">
-                <button type="button" class="boton-secundario-recorte" (click)="cancelarRecorte()">Cancelar</button>
-                <button type="button" class="boton-confirmar-recorte" [disabled]="recorteCargando"
-                  (click)="confirmarRecorte()">Usar esta foto</button>
-              </div>
-            </section>
-          </div>
-        }
-
-        @if (mensaje) {
-          <p class="mensaje" [class.exito]="mensajeEsExito"
-            [attr.role]="mensajeEsExito ? 'status' : 'alert'">{{ mensaje }}</p>
-        }
       </section>
+    }
+    @if (!caso && mensaje()) {
+      <p class="mensaje" role="status">{{ mensaje() }}</p>
     }
   </main>
 
   @if (caso) {
     <footer class="barra-publicar">
-      <button type="button" class="boton-publicar" [disabled]="guardando" (click)="publicar()">
+      @if (mensaje()) {
+        <p class="mensaje" role="status">{{ mensaje() }}</p>
+      }
+      <button type="button" class="boton-publicar" [disabled]="guardando() || procesandoFotos()" (click)="publicar()">
         <ion-icon name="heart-outline" aria-hidden="true"></ion-icon>
-        {{ guardando ? 'Guardando...' : 'Publicar mascota' }}
+        {{ guardando() ? 'Guardando...' : 'Publicar mascota' }}
       </button>
     </footer>
   }

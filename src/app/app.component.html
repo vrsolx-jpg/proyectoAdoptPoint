@@ -1,10 +1,13 @@
 <ion-app>
   <ion-router-outlet></ion-router-outlet>
-
   @if (cargando()) {
     <div class="pantalla-carga" role="status" aria-label="Cargando AdoptPoint">
-      <img src="assets/img/logo.png" alt="AdoptPoint">
+      <img src="assets/img/logo.png" alt="">
       <h1>AdoptPoint</h1>
+    </div>
+  } @else if (mostrandoEsqueleto()) {
+    <div class="carga-interfaz">
+      <app-esqueleto [vista]="vistaEsqueleto()" etiqueta="Cargando interfaz"></app-esqueleto>
     </div>
   }
 </ion-app>

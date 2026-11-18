@@ -1,58 +1,33 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, input, linkedSignal, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-export type EdadFiltro = 'cachorro' | 'adulto' | 'mayor';
-export type TamanioFiltro = 'Pequeño' | 'Mediano' | 'Grande';
-export type EspecieFiltro = 'Perro' | 'Gato' | 'Ave' | 'Otro';
-export type SexoFiltro = 'Macho' | 'Hembra';
+type EdadFiltro = 'cachorro' | 'adulto' | 'mayor';
 
 export interface FiltrosMascotas {
   edad: EdadFiltro | '';
-  tamanio: TamanioFiltro | '';
-  especie: EspecieFiltro | '';
   ubicacion: string;
-  sexo: SexoFiltro | '';
 }
+
+export const FILTROS_VACIOS: FiltrosMascotas = { edad: '', ubicacion: '' };
 
 @Component({
   selector: 'app-filtros',
   templateUrl: './filtros.component.html',
-  styleUrls: ['./filtros.component.scss'],
+  styleUrl: './filtros.component.scss',
   imports: [FormsModule]
 })
 export class FiltrosComponent {
-  @Output() readonly filtrosAplicados = new EventEmitter<FiltrosMascotas>();
-
-  readonly rangosEdad: { valor: EdadFiltro; etiqueta: string }[] = [
-    { valor: 'cachorro', etiqueta: 'Cachorro · 0-2 años' },
-    { valor: 'adulto', etiqueta: 'Adulto · 2-6 años' },
-    { valor: 'mayor', etiqueta: 'Mayor · 6+ años' }
-  ];
-  readonly tamanos: TamanioFiltro[] = ['Pequeño', 'Mediano', 'Grande'];
-  readonly especies: EspecieFiltro[] = ['Perro', 'Gato', 'Ave', 'Otro'];
-  readonly sexos: SexoFiltro[] = ['Macho', 'Hembra'];
-
-  criterios: FiltrosMascotas = this.filtrosVacios();
+  readonly filtrosAplicados = output<FiltrosMascotas>();
+  readonly inicial = input(FILTROS_VACIOS);
+  readonly criterios = linkedSignal(() => ({ ...this.inicial() }));
 
   aplicar(): void {
-    this.filtrosAplicados.emit({
-      ...this.criterios,
-      ubicacion: this.criterios.ubicacion.trim()
-    });
+    const { edad, ubicacion } = this.criterios();
+    this.filtrosAplicados.emit({ edad, ubicacion: ubicacion.trim() });
   }
 
   limpiar(): void {
-    this.criterios = this.filtrosVacios();
-    this.filtrosAplicados.emit({ ...this.criterios });
-  }
-
-  private filtrosVacios(): FiltrosMascotas {
-    return {
-      edad: '',
-      tamanio: '',
-      especie: '',
-      ubicacion: '',
-      sexo: ''
-    };
+    this.criterios.set({ ...FILTROS_VACIOS });
+    this.filtrosAplicados.emit({ ...FILTROS_VACIOS });
   }
 }

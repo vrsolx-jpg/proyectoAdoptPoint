@@ -14,6 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('./login/login.page').then( m => m.LoginPage)
   },
   {
+    path: 'terminos',
+    loadComponent: () => import('./terminos/terminos.page').then((m) => m.TerminosPage)
+  },
+  {
     path: 'registro',
     loadComponent: () => import('./registro/registro.page').then( m => m.RegistroPage)
   },
@@ -28,8 +32,17 @@ export const routes: Routes = [
       import('./perfil/perfil.page').then((m) => m.PerfilPage)
   },
   {
+    path: 'ajustes',
+    loadComponent: () => import('./perfil/ajustes.page').then((m) => m.AjustesPage)
+  },
+  {
     path: 'publicar',
     loadComponent: () =>
       import('./publicar/publicar.page').then((m) => m.PublicarPage)
+  },
+  {
+    path: 'notificaciones',
+    loadComponent: () =>
+      import('./notificaciones/notificaciones.page').then((m) => m.NotificacionesPage)
   },
 ];

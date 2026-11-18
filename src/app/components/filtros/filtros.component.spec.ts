@@ -1,4 +1,4 @@
-import '@angular/compiler';
+import { TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { FiltrosComponent } from './filtros.component';
 
@@ -6,7 +6,7 @@ describe('FiltrosComponent', () => {
   let component: FiltrosComponent;
 
   beforeEach(() => {
-    component = new FiltrosComponent();
+    component = TestBed.runInInjectionContext(() => new FiltrosComponent());
   });
 
   it('crea el componente de filtros', () => {
@@ -15,13 +15,10 @@ describe('FiltrosComponent', () => {
 
   it('emite los filtros seleccionados y recorta la ubicación', () => {
     let emitidos = '';
-    component.criterios = {
+    component.criterios.set({
       edad: 'adulto',
-      tamanio: 'Mediano',
-      especie: 'Gato',
       ubicacion: '  Bogotá  ',
-      sexo: 'Hembra'
-    };
+    });
     component.filtrosAplicados.subscribe((filtros) => {
       emitidos = JSON.stringify(filtros);
     });
@@ -30,15 +27,12 @@ describe('FiltrosComponent', () => {
 
     expect(JSON.parse(emitidos)).toEqual({
       edad: 'adulto',
-      tamanio: 'Mediano',
-      especie: 'Gato',
       ubicacion: 'Bogotá',
-      sexo: 'Hembra'
     });
   });
 
   it('restablece y emite criterios vacíos al limpiar', () => {
-    component.criterios.edad = 'mayor';
+    component.criterios.update((criterios) => ({ ...criterios, edad: 'mayor' }));
     let emitidos = '';
     component.filtrosAplicados.subscribe((filtros) => {
       emitidos = JSON.stringify(filtros);
@@ -48,10 +42,7 @@ describe('FiltrosComponent', () => {
 
     expect(JSON.parse(emitidos)).toEqual({
       edad: '',
-      tamanio: '',
-      especie: '',
       ubicacion: '',
-      sexo: ''
     });
   });
 });

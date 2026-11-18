@@ -1,6 +1,6 @@
 :host {
-  --naranja-fondo: #FFAA00;
-  --naranja: #FF8800;
+  --naranja-fondo: var(--naranja-adoptpoint);
+  --naranja: var(--naranja-adoptpoint);
   --texto: #30251d;
   --crema: #fffaf4;
 }
@@ -63,7 +63,7 @@
 
 h1 {
   margin: 0 0 8px;
-  color: var(--naranja);
+  color: var(--titulo-adoptpoint);
   font-family: 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
   font-size: clamp(32px, 9vw, 42px);
   line-height: 1;
@@ -137,19 +137,15 @@ h1 {
 
 .boton-google {
   height: 48px;
-  --border-color: #ead8c5;
   --border-radius: 24px;
-  --color: var(--texto);
   font-weight: 700;
   text-transform: none;
+  --background: #fff;
+  --color: #1f1f1f;
+  --border-color: #747775;
 }
 
-.google-g {
-  margin-right: 8px;
-  color: #4285f4;
-  font-size: 18px;
-  font-weight: 900;
-}
+
 
 .pie {
   margin: 20px 0 0;

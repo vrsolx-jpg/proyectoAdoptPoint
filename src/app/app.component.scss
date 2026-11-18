@@ -4,35 +4,25 @@
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  place-items: center;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: #fff;
+  background: #fffaf4;
 }
-
-.pantalla-carga img {
-  width: min(52vw, 220px);
-  height: auto;
-  animation: aparecer-logo 900ms ease-in-out;
-}
-
+.pantalla-carga img { width: min(52vw, 220px); height: auto; }
 .pantalla-carga h1 {
   margin: 0;
-  color: #ff8800;
-  font-family: 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
+  color: var(--titulo-adoptpoint);
+  font-family: var(--fuente-titulo);
   font-size: 32px;
-  text-align: center;
 }
 
-@keyframes aparecer-logo {
-  from {
-    opacity: 0;
-    transform: scale(.88);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.carga-interfaz {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  padding: max(16px, env(safe-area-inset-top)) 18px 16px;
+  background: #f7efe7;
 }
+.carga-interfaz app-esqueleto { max-width: 860px; margin: auto; }

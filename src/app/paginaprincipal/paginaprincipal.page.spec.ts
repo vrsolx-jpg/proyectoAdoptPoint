@@ -15,8 +15,6 @@ const publicaciones: Publicacion[] = [
       especie: 'Gato',
       descripcion: 'Gato en adopción',
       edad: 'adulto',
-      tamanio: 'Mediano',
-      sexo: 'Hembra',
       ciudad: 'Bogotá'
     }
   },
@@ -30,7 +28,6 @@ const publicaciones: Publicacion[] = [
       especie: 'Loro',
       descripcion: 'Ave encontrada',
       edad: 'cachorro',
-      tamanio: 'Pequeño',
       lugarEncontrado: 'Parque Central'
     }
   },
@@ -44,8 +41,6 @@ const publicaciones: Publicacion[] = [
       especie: 'Perro',
       descripcion: 'Perro en adopción',
       edad: 6,
-      tamanio: 'Grande',
-      sexo: 'Macho',
       ciudad: 'Medellín'
     }
   }
@@ -53,27 +48,20 @@ const publicaciones: Publicacion[] = [
 
 const filtrosVacios: FiltrosMascotas = {
   edad: '',
-  tamanio: '',
-  especie: '',
   ubicacion: '',
-  sexo: ''
 };
 
 describe('filtrarPublicaciones', () => {
-  it('combina edad, tamaño, especie, ubicación y sexo', () => {
+  it('combina edad y ubicación', () => {
     expect(filtrarPublicaciones(publicaciones, {
       edad: 'adulto',
-      tamanio: 'Mediano',
-      especie: 'Gato',
       ubicacion: 'bogotá',
-      sexo: 'Hembra'
     }).map((publicacion) => publicacion.id)).toEqual(['gato']);
   });
 
-  it('filtra especies personalizadas y busca ubicación en animales encontrados', () => {
+  it('busca por el lugar del hallazgo', () => {
     expect(filtrarPublicaciones(publicaciones, {
       ...filtrosVacios,
-      especie: 'Otro',
       ubicacion: 'parque'
     }).map((publicacion) => publicacion.id)).toEqual(['ave']);
   });

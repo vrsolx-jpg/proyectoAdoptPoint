@@ -57,17 +57,26 @@
             Iniciar sesión
           </ion-button>
 
+          <button class="recuperar-login" type="button" (click)="recuperarContrasena()" [disabled]="enviandoRecuperacion()">
+            ¿Olvidaste tu contraseña?
+          </button>
           <div class="separador"><span>o continúa con</span></div>
 
           <ion-button
             expand="block"
             type="button"
             fill="outline"
-            class="boton-google"
+            class="boton-google" [disabled]="googlePendiente()"
             (click)="iniciarConGoogle()">
-            <span class="google-g" aria-hidden="true">G</span>
+            <span class="google-g" aria-hidden="true"><img src="assets/icon/google-oficial.png" alt=""></span>
             Continuar con Google
           </ion-button>
+          @if (errorGoogle() || authService.errorGoogleRedireccion(); as aviso) {
+            <p class="mensaje-auth" role="status">{{ aviso }}</p>
+            @if (aviso.includes("no autoriza") && authService.urlGoogleLocal; as url) {
+              <a class="mensaje-auth" [href]="url">Abrir AdoptPoint en localhost</a>
+            }
+          }
         </form>
 
         <p class="pie">¿Aún no tienes una cuenta? <a routerLink="/registro">Crear una cuenta</a></p>

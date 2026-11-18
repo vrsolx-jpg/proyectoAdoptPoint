@@ -1,15 +1,10 @@
-import { TestBed } from '@angular/core/testing';
-import { Firebase } from './firebase';
+import { describe, expect, it } from 'vitest';
+import { auth, db } from './firebase';
+import { auth as autenticacionPrincipal, db as basePrincipal } from '../firebase';
 
 describe('Firebase', () => {
-  let service: Firebase;
-
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(Firebase);
-  });
-
-  it('should be created', () => {
-    expect(service).toBeTruthy();
+  it('comparte la misma autenticación y base de datos en ambas rutas de importación', () => {
+    expect(auth).toBe(autenticacionPrincipal);
+    expect(db).toBe(basePrincipal);
   });
 });

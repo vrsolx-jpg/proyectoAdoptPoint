@@ -1,63 +1,25 @@
 <section class="panel-filtros" aria-labelledby="titulo-filtros">
   <header class="encabezado-filtros">
-    <div>
-      <p class="etiqueta-seccion">ENCUENTRA A TU COMPAÑERO</p>
-      <h2 id="titulo-filtros">Filtrar mascotas</h2>
-      <p class="ayuda-filtros">Combina los criterios que quieras aplicar.</p>
-    </div>
+    <h2 id="titulo-filtros">Filtrar mascotas</h2>
     <button class="boton-limpiar" type="button" (click)="limpiar()">Limpiar</button>
   </header>
-
   <form (ngSubmit)="aplicar()">
     <div class="campos-filtros">
       <div class="campo-filtro">
-        <label for="filtro-edad">Edad</label>
-        <select id="filtro-edad" name="edad" [(ngModel)]="criterios.edad">
+        <label for="filtro-edad">Rango de edad</label>
+        <select id="filtro-edad" name="edad" [(ngModel)]="criterios().edad">
           <option value="">Cualquier edad</option>
-          @for (rango of rangosEdad; track rango.valor) {
-            <option [value]="rango.valor">{{ rango.etiqueta }}</option>
-          }
+          <option value="cachorro">Cachorro · Menos de 2 años</option>
+          <option value="adulto">Adulto · De 2 a menos de 6 años</option>
+          <option value="mayor">Mayor · Desde 6 años</option>
         </select>
       </div>
-
-      <div class="campo-filtro">
-        <label for="filtro-tamanio">Tamaño</label>
-        <select id="filtro-tamanio" name="tamanio" [(ngModel)]="criterios.tamanio">
-          <option value="">Cualquier tamaño</option>
-          @for (tamano of tamanos; track tamano) {
-            <option [value]="tamano">{{ tamano }}</option>
-          }
-        </select>
-      </div>
-
-      <div class="campo-filtro">
-        <label for="filtro-especie">Especie</label>
-        <select id="filtro-especie" name="especie" [(ngModel)]="criterios.especie">
-          <option value="">Cualquier especie</option>
-          @for (especie of especies; track especie) {
-            <option [value]="especie">{{ especie }}</option>
-          }
-        </select>
-      </div>
-
       <div class="campo-filtro">
         <label for="filtro-ubicacion">Ubicación</label>
-        <input id="filtro-ubicacion" name="ubicacion" type="text" maxlength="100"
-          autocomplete="address-level2" placeholder="Ciudad o barrio"
-          [(ngModel)]="criterios.ubicacion">
-      </div>
-
-      <div class="campo-filtro">
-        <label for="filtro-sexo">Sexo</label>
-        <select id="filtro-sexo" name="sexo" [(ngModel)]="criterios.sexo">
-          <option value="">Cualquier sexo</option>
-          @for (sexo of sexos; track sexo) {
-            <option [value]="sexo">{{ sexo }}</option>
-          }
-        </select>
+        <input id="filtro-ubicacion" name="ubicacion" type="text" maxlength="80"
+          autocomplete="address-level2" placeholder="Ciudad o barrio" [(ngModel)]="criterios().ubicacion">
       </div>
     </div>
-
     <div class="acciones-filtros">
       <button class="boton-aplicar" type="submit">Aplicar filtros</button>
     </div>

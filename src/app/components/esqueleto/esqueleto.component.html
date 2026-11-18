@@ -1,0 +1,63 @@
+<div role="status" [attr.aria-label]="etiqueta()">
+  <div aria-hidden="true">
+    @if (vista() === 'inicio' || vista() === 'perfil') {
+      <div class="cabecera">
+        <span class="bloque circulo"></span>
+        <div class="lineas">
+          <span class="bloque linea larga"></span>
+          <span class="bloque linea corta"></span>
+        </div>
+      </div>
+      <span class="bloque barra"></span>
+    }
+    @switch (vista()) {
+      @case ('historia') {
+        <span class="bloque linea progreso"></span>
+        <div class="panel instantanea">
+          <span class="bloque imagen"></span>
+          <span class="bloque linea media"></span>
+          <span class="bloque linea corta"></span>
+        </div>
+      }
+      @case ('ajustes') {
+        <div class="panel formulario">
+          <span class="bloque linea media"></span>
+          @for (bloque of bloques; track bloque) {
+            <div>
+              <span class="bloque linea corta"></span>
+              <span class="bloque campo"></span>
+            </div>
+          }
+          <span class="bloque accion"></span>
+        </div>
+      }
+      @case ('lista') {
+        <div class="lista">
+          @for (bloque of bloques; track bloque) {
+            <div class="panel fila">
+              <span class="bloque circulo"></span>
+              <div class="lineas">
+                <span class="bloque linea larga"></span>
+                <span class="bloque linea media"></span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+      @default {
+        <div class="rejilla">
+          @for (bloque of bloques; track bloque) {
+            <div class="panel ficha">
+              <span class="bloque imagen"></span>
+              <div class="lineas">
+                <span class="bloque linea corta"></span>
+                <span class="bloque linea larga"></span>
+                <span class="bloque linea media"></span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,85 @@
+{
+  "project_info": {
+    "project_number": "629633798601",
+    "firebase_url": "https://adoptpoint-default-rtdb.firebaseio.com",
+    "project_id": "adoptpoint",
+    "storage_bucket": "adoptpoint.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629633798601:android:48b14a3f39da9362e51818",
+        "android_client_info": {
+          "package_name": "com.example.proyecto"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "629633798601-u2e5mdnhub68i0s7u8hqgsrhfpb8jdf8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgIx1yfopjVCs8TrmIR_9HpxkAMNs8lC0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "629633798601-u2e5mdnhub68i0s7u8hqgsrhfpb8jdf8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:629633798601:android:e0efe101e71b9679e51818",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "629633798601-07odlgohp030cgvn864hngh351acfi7e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.ionic.starter",
+            "certificate_hash": "57b6933a1c8f01a58cbd921d6fae97bf78b3d7de"
+          }
+        },
+        {
+          "client_id": "629633798601-4ieu0uvvlun0732i939a7nbn97vmt209.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.ionic.starter",
+            "certificate_hash": "eaea4596233364a18cf4f6d0189b7461fe250387"
+          }
+        },
+        {
+          "client_id": "629633798601-u2e5mdnhub68i0s7u8hqgsrhfpb8jdf8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgIx1yfopjVCs8TrmIR_9HpxkAMNs8lC0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "629633798601-u2e5mdnhub68i0s7u8hqgsrhfpb8jdf8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

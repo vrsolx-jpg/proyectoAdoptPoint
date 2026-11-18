@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -14,7 +14,8 @@ export class Tab1Page {
   private puntoInicial = 0;
   private deslizando = false;
 
-  constructor(private readonly router: Router) {
+  private readonly router = inject(Router);
+  constructor() {
     addIcons({ pawOutline });
   }
 

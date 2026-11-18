@@ -28,17 +28,6 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
-
 :root,
 body {
   font-family: 'Roboto', sans-serif;
@@ -50,4 +39,132 @@ ion-toast.toast-google-error {
 
 ion-toast.toast-google-error::part(container) {
   border-radius: 16px;
+}
+
+.google-g {
+  position: relative;
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  overflow: hidden;
+}
+
+.google-g img {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  width: 40px;
+  height: 40px;
+  max-width: none;
+}
+
+.mensaje-auth, .recuperar-login {
+  color: var(--titulo-adoptpoint);
+  font-size: .88rem;
+  line-height: 1.45;
+}
+
+.recuperar-login {
+  align-self: center;
+  min-height: 44px;
+  background: transparent;
+  font-weight: 700;
+}
+
+ion-toast.aviso-gps {
+  --background: #fff;
+  --border-color: var(--naranja-adoptpoint);
+  --border-style: solid;
+  --border-width: 2px;
+  --border-radius: 22px;
+  --color: var(--naranja-adoptpoint);
+  --button-color: #fff;
+  --max-width: 370px;
+  font-family: var(--fuente-titulo);
+}
+
+ion-toast.aviso-gps::part(content) {
+  text-align: center;
+  line-height: 1.45;
+}
+
+ion-toast.aviso-gps::part(button) {
+  text-transform: none;
+  min-height: 44px;
+  margin: 4px;
+  padding: 7px 14px;
+  border-radius: 12px;
+  background: var(--naranja-adoptpoint);
+  color: #fff;
+  font-family: var(--fuente-titulo);
+}
+
+ion-toast.aviso-gps::part(container) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+
+ion-toast.aviso-gps::part(content) { width: 100%; }
+
+ion-alert.aviso-celular { --background: #fff; --min-width: min(330px, 90vw); }
+
+ion-alert.aviso-celular .alert-wrapper {
+  border: 2px solid var(--naranja-adoptpoint);
+  border-radius: 22px;
+}
+
+ion-alert.aviso-celular :is(.alert-head, .alert-message) { text-align: center; }
+
+ion-alert.aviso-celular :is(.alert-title, .alert-message) {
+  color: var(--titulo-adoptpoint);
+  font-family: var(--fuente-titulo);
+}
+
+ion-alert.aviso-celular .alert-button-group { justify-content: center; }
+
+ion-alert.aviso-celular .alert-button {
+  min-height: 44px;
+  margin: 0;
+  padding: 7px 20px;
+  border-radius: 12px;
+  background: var(--naranja-adoptpoint);
+  color: #fff;
+  font-family: var(--fuente-titulo);
+  text-transform: none;
+}
+
+ion-toast.permiso-ubicacion {
+  --width: calc(100% - 48px);
+  --max-width: 330px;
+}
+ion-toast.permiso-ubicacion::part(content) { padding: 22px 18px 14px; }
+ion-toast.permiso-ubicacion::part(header) { font-size: 1.15rem; line-height: 1.5; margin-bottom: 12px; }
+ion-toast.permiso-ubicacion::part(message) { font-size: 1.05rem; line-height: 1.55; }
+ion-toast.permiso-ubicacion::part(button) { min-height: 48px; margin: 5px 4px 16px; }
+
+.usar-ubicacion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 8px 0;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 14px;
+  background: #ff8800;
+  color: #fff;
+  font-family: var(--fuente-titulo);
+}
+.usar-ubicacion:disabled { opacity: .65; }
+.ver-solicitudes {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin-top: 9px;
+  color: #ff8800;
+  font-family: var(--fuente-titulo);
+  line-height: 1.45;
 }

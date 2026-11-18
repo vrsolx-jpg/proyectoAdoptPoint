@@ -1,162 +1,160 @@
 <ion-content [fullscreen]="true" class="pagina">
   <main class="contenedor">
-    <header class="encabezado" [class.dashboard-encabezado]="vista === 'dashboard'">
+    <header class="encabezado dashboard-encabezado">
       <div class="perfil">
-        <div class="avatar">
-          @if (usuario()?.photoURL) {
-            <img [src]="usuario()!.photoURL" [alt]="'Foto de ' + nombreUsuario">
+        <a class="avatar" routerLink="/perfil" aria-label="Abrir perfil">
+          @if (perfil.foto(); as foto) {
+            <img [src]="foto" alt="">
           } @else {
             <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
           }
-        </div>
-        <div>
-          <p class="saludo">Bienvenida de vuelta {{ nombreUsuario }}!</p>
-        </div>
+        </a>
+        <h1 class="saludo">{{ usuario() ? '¡Qué bueno verte, ' + nombreUsuario() + '!' : 'Encuentra a tu próximo compañero' }}</h1>
       </div>
-      <button class="boton-notificaciones" type="button" aria-label="Notificaciones">
-        <ion-icon name="notifications-outline"></ion-icon>
-      </button>
+      <a class="boton-notificaciones" routerLink="/notificaciones" aria-label="Notificaciones">
+        <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+      </a>
     </header>
 
     <button class="busqueda" type="button" aria-controls="panel-filtros"
-      [attr.aria-expanded]="filtrosAbiertos()" (click)="alternarFiltros()">
+      [attr.aria-expanded]="filtrosAbiertos()" (click)="filtrosAbiertos.set(!filtrosAbiertos())">
       <span>Filtrar mascotas</span>
       <ion-icon name="options-outline" aria-hidden="true"></ion-icon>
     </button>
 
     <div id="panel-filtros" class="panel-filtros-desplegable" [hidden]="!filtrosAbiertos()">
-      <app-filtros (filtrosAplicados)="aplicarFiltros($event)"></app-filtros>
+      <app-filtros [inicial]="criteriosFiltro()" (filtrosAplicados)="aplicarFiltros($event)"></app-filtros>
     </div>
-
-    @if (errorPublicaciones()) {
-      <p class="error-publicaciones" role="alert">{{ errorPublicaciones() }}</p>
+    @if (usuario()) {
+      <button class="usar-ubicacion" type="button" [disabled]="detectando()" (click)="detectarCiudad()">
+        <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+        {{ detectando() ? 'Detectando ciudad…' : 'Usar mi ubicación' }}
+      </button>
     }
-
-    @if (vista === 'dashboard') {
-      <h2 class="titulo-todas-mascotas">Todas las mascotas</h2>
+    @if (detectando()) {
+      <p role="status">Buscando tu ciudad…</p>
     }
+    @if (mensajeUbicacion()) {
+      <p class="error-publicaciones" role="status">{{ mensajeUbicacion() }}</p>
+    }
+    @if (mostrarHistoria()) {
+      @for (historia of historias(); track historia.id; let i = $index) {
+        @if (i === pasoHistoria()) {
+          <app-historia-mascota [historia]="historia" [paso]="i + 1" [total]="historias().length"
+            (avanzar)="avanzarHistoria()" animate.enter="entrar-instantanea"></app-historia-mascota>
+        }
+      } @empty {
+        <app-esqueleto vista="historia" etiqueta="Cargando fotos recientes"></app-esqueleto>
+      }
+    } @else {
+      @if (ciudad()) {
+        <button class="filtro-ciudad" type="button" (click)="guardarCiudad('')" [attr.aria-label]="'Quitar filtro de ' + ciudad()">
+          <ion-icon name="location-outline" aria-hidden="true"></ion-icon>{{ ciudad() }}
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </button>
+      }
+      @if (publicacionesService.error() || publicacionesService.errorMigracion() || perfil.errorPerfil() || perfil.errorFavoritos()) {
+        <p class="error-publicaciones" role="status">
+          {{ publicacionesService.error() || publicacionesService.errorMigracion() || perfil.errorPerfil() || perfil.errorFavoritos() }}
+        </p>
+      }
 
-    @if (publicaciones().length || hayFiltrosActivos()) {
-      <section class="seccion-dashboard publicaciones-recientes" aria-labelledby="titulo-publicaciones">
-        <div class="titulo-seccion">
-          <h2 id="titulo-publicaciones">Publicaciones recientes</h2>
-        </div>
-
-        @if (publicacionesFiltradas().length) {
-          <div class="rejilla-animales">
-            @for (publicacion of publicacionesFiltradas(); track publicacion.id) {
-              <article
-                class="tarjeta-animal tarjeta-publicacion"
-                tabindex="0"
-                role="button"
-                [attr.aria-label]="'Ver información de ' + tituloPublicacion(publicacion)"
-                (click)="abrirDetalle(publicacion)"
-                (keydown.enter)="abrirDetalle(publicacion)"
-                (keydown.space)="abrirDetalle(publicacion); $event.preventDefault()">
-                @if (publicacion.fotos[0]) {
-                  <div class="imagen-animal">
-                    <img [src]="publicacion.fotos[0]" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
-                  </div>
-                } @else {
-                  <div class="imagen-pendiente">
-                    <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-                    <span>Sin foto</span>
-                  </div>
-                }
-                <div class="datos-animal">
-                  <h3>{{ tituloPublicacion(publicacion) }}</h3>
-                  <p>{{ detallePublicacion(publicacion) }}</p>
-                  <span>{{ estadoPublicacion(publicacion) }}</span>
-                  <p>{{ publicacion.datos.descripcion }}</p>
-                </div>
-              </article>
-            }
-          </div>
-        } @else {
-          <p class="sin-resultados" role="status">No hay publicaciones que coincidan con los filtros seleccionados.</p>
+      <section class="publicaciones-recientes" aria-labelledby="titulo-publicaciones">
+        <h2 class="titulo-todas-mascotas" id="titulo-publicaciones">Mascotas</h2>
+        @if (publicacionesService.cargando()) {
+          <app-esqueleto etiqueta="Cargando mascotas"></app-esqueleto>
+        } @else if (publicacionesFiltradas().length) {
+          <app-tarjetas-mascotas [publicaciones]="publicacionesFiltradas()" (abrir)="abrirDetalle($event)"></app-tarjetas-mascotas>
+        } @else if (!publicacionesService.error()) {
+          <p class="sin-resultados" role="status">{{ ciudad() || criteriosFiltro().edad ? 'No hay mascotas que coincidan con estos filtros.' : 'Todavía no hay publicaciones disponibles.' }}</p>
         }
       </section>
-    }
-
-    @if (!hayFiltrosActivos() && vista === 'historias') {
-      <section class="historias" aria-label="Historias de mascotas">
-        <div class="progreso" aria-hidden="true">
-          @for (historia of historias; track historia.nombre; let i = $index) {
-            <span [class.activa]="i <= historiaActual"></span>
-          }
-        </div>
-        <button
-          class="tarjeta-historia"
-          type="button"
-          (click)="siguienteHistoria()"
-          [attr.aria-label]="'Ver historia de ' + historias[historiaActual].nombre">
-          <img [src]="historias[historiaActual].imagen" [alt]="historias[historiaActual].alt">
-          <span class="etiqueta-historia">
-            {{ historias[historiaActual].nombre }}
-            <small>{{ historias[historiaActual].tipo }}</small>
-          </span>
-          <span class="flecha-historia" aria-hidden="true">→</span>
-        </button>
-        <p class="ayuda-historia">Toca la foto para conocer otra mascota</p>
-      </section>
-    } @else {
-      <app-tarjetas-mascotas></app-tarjetas-mascotas>
     }
   </main>
 
-  @if (publicacionSeleccionada(); as publicacion) {
-    <div class="fondo-detalle-publicacion" role="presentation" (click)="cerrarDetalle()">
-      <section
-        class="detalle-publicacion"
-        role="dialog"
-        aria-modal="true"
-        [attr.aria-label]="'Información de ' + tituloPublicacion(publicacion)"
-        (click)="$event.stopPropagation()">
-        <button class="boton-cerrar-publicacion" type="button" aria-label="Cerrar información"
-          (click)="cerrarDetalle()">
-          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
-        </button>
-        @if (publicacion.fotos[0]) {
-          <img
-            class="imagen-detalle-publicacion"
-            [src]="publicacion.fotos[0]"
-            [alt]="'Foto de ' + tituloPublicacion(publicacion)">
-        } @else {
-          <div class="imagen-pendiente imagen-detalle-publicacion">
-            <ion-icon name="paw-outline" aria-hidden="true"></ion-icon>
-            <span>Sin foto</span>
-          </div>
-        }
-        <div class="contenido-detalle-publicacion">
-          <span class="estado-detalle">{{ estadoPublicacion(publicacion) }}</span>
-          <h2>{{ tituloPublicacion(publicacion) }}</h2>
-          <p class="resumen-detalle">
-            {{ publicacion.datos.especie }}
-            @if (publicacion.datos.raza) {
-              · {{ publicacion.datos.raza }}
+  <ion-modal [isOpen]="!!publicacionSeleccionada()" (didDismiss)="cerrarDetalle()"
+    class="modal-mascota" aria-labelledby="titulo-detalle">
+    <ng-template>
+      @if (publicacionSeleccionada(); as publicacion) {
+        <ion-content class="contenido-modal-mascota">
+          <section class="detalle-publicacion">
+            <button class="boton-cerrar-publicacion" type="button" aria-label="Cerrar información" (click)="cerrarDetalle()">
+              <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+            </button>
+            @if (publicacion.fotos[fotoDetalle()] || publicacion.fotos[0]; as foto) {
+              <img class="imagen-detalle-publicacion" [src]="foto" [alt]="'Foto de ' + tituloPublicacion(publicacion)">
+            } @else {
+              <div class="imagen-pendiente imagen-detalle-publicacion">
+                <ion-icon name="paw-outline" aria-hidden="true"></ion-icon> Sin foto
+              </div>
             }
-            @if (publicacion.datos.edad !== undefined) {
-              · {{ publicacion.datos.edad }} {{ publicacion.datos.edad === 1 ? 'año' : 'años' }}
+            @if (publicacion.fotos.length > 1) {
+              <div class="miniaturas" aria-label="Fotos de la mascota">
+                @for (foto of publicacion.fotos; track $index) {
+                  <button type="button" (click)="fotoDetalle.set($index)" [attr.aria-label]="'Ver foto ' + ($index + 1)"
+                    [attr.aria-pressed]="fotoDetalle() === $index"><img [src]="foto" alt=""></button>
+                }
+              </div>
             }
-          </p>
-          <p class="descripcion-detalle">{{ publicacion.datos.descripcion }}</p>
-          @if (publicacion.datos.ciudad || publicacion.datos.lugarEncontrado) {
-            <p class="ubicacion-detalle">
-              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-              {{ publicacion.datos.ciudad || publicacion.datos.lugarEncontrado }}
-            </p>
-          }
-          <div class="publicador-detalle">
-            <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
-            <div>
-              <span>Publicado por</span>
-              <strong>{{ publicadorPublicacion(publicacion) }}</strong>
+            <div class="contenido-detalle-publicacion">
+              <span class="estado-detalle">{{ estadoPublicacion(publicacion) }}</span>
+              <h2 id="titulo-detalle">{{ tituloPublicacion(publicacion) }}</h2>
+              <p class="resumen-detalle">{{ publicacion.datos.especie }}{{ publicacion.datos.raza ? ' · ' + publicacion.datos.raza : '' }}</p>
+              <p class="descripcion-detalle">{{ publicacion.datos.descripcion }}</p>
+              @if (publicacion.datos.ciudad || publicacion.datos.lugarEncontrado) {
+                <p class="ubicacion-detalle">
+                  <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+                  {{ publicacion.datos.ciudad }}@if (publicacion.datos.ciudad && publicacion.datos.lugarEncontrado) { · }{{ publicacion.datos.lugarEncontrado }}
+                </p>
+              }
+              <div class="publicador-detalle">
+                <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+                <div><span>Publicado por</span><strong>{{ nombrePublicador(publicacion) }}</strong></div>
+              </div>
+              @if (publicacion.usuarioId !== usuario()?.uid) {
+                @let tieneContacto = !!publicacionesService.telefonoDe(publicacion);
+                <button class="boton-whatsapp" type="button" [disabled]="!tieneContacto"
+                  (click)="contactarPorWhatsApp(publicacion)">
+                  <ion-icon name="logo-whatsapp" aria-hidden="true"></ion-icon> Contactar por WhatsApp
+                </button>
+
+              } @else {
+                <button class="boton-favorito-detalle" type="button" [disabled]="eliminando()" (click)="eliminar(publicacion)">
+                  Eliminar publicación
+                </button>
+              }
+              @if (publicacion.estado !== 'adoptada') {
+                <button class="boton-adoptar" type="button" [disabled]="publicacion.usuarioId === usuario()?.uid || solicitando()" (click)="solicitarAdopcion(publicacion)">
+                  {{ solicitando() ? 'Enviando…' : 'Solicitar adopción' }}
+                </button>
+                @if (publicacion.usuarioId === usuario()?.uid) {
+                  <a class="ver-solicitudes" href="/notificaciones" (click)="verSolicitudes($event)">Tu publicación · Ver solicitudes</a>
+                }
+              }
+              @if (publicacion.creditoFoto; as credito) {
+                <p class="credito-foto">
+                  Foto de <a [href]="credito.fuente" target="_blank" rel="noopener noreferrer">{{ credito.autor }}</a>
+                  @if (credito.enlaceLicencia; as licencia) {
+                    · <a [href]="licencia" target="_blank" rel="noopener noreferrer">{{ credito.licencia }}</a>
+                  } @else {
+                    · {{ credito.licencia }}
+                  }
+                </p>
+              }
+              <button class="boton-favorito-detalle" type="button" [attr.aria-pressed]="perfil.favoritos().has(publicacion.id)"
+                [disabled]="perfil.favoritosPendientes().has(publicacion.id)" (click)="alternarFavorito(publicacion.id)">
+                <ion-icon [name]="perfil.favoritos().has(publicacion.id) ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
+                {{ perfil.favoritos().has(publicacion.id) ? 'Quitar de favoritos' : 'Guardar en favoritos' }}
+              </button>
+              @if (mensajeDetalle()) {
+                <p class="mensaje-adopcion" role="status">{{ mensajeDetalle() }}</p>
+              }
             </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  }
+          </section>
+        </ion-content>
+      }
+    </ng-template>
+  </ion-modal>
 
   <nav class="barra-pestanas" aria-label="Navegación principal">
     <a class="pestana activa" routerLink="/paginaprincipal" aria-current="page">
@@ -172,4 +170,5 @@
       <span>Perfil</span>
     </a>
   </nav>
+
 </ion-content>

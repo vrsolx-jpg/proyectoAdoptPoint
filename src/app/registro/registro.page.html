@@ -28,7 +28,7 @@
               required>
             </ion-input>
           </ion-item>
-          <p class="error" *ngIf="nombre && !nombreValido()">Usa solo letras, espacios, tildes y guiones.</p>
+          @if (nombre && !nombreValido()) { <p class="error">Usa solo letras, espacios, tildes y guiones.</p> }
 
           <ion-item class="campo">
             <ion-label position="stacked">Correo electrónico</ion-label>
@@ -42,7 +42,7 @@
               required>
             </ion-input>
           </ion-item>
-          <p class="error" *ngIf="correo && !correoValido()">Escribe un correo válido.</p>
+          @if (correo && !correoValido()) { <p class="error">Escribe un correo válido.</p> }
 
           <ion-item class="campo">
             <ion-label position="stacked">Contraseña</ion-label>
@@ -95,16 +95,15 @@
               </ion-icon>
             </ion-button>
           </ion-item>
-          <p class="error" *ngIf="confirmacion && contrasena !== confirmacion">Las contraseñas no coinciden.</p>
+          @if (confirmacion && contrasena !== confirmacion) { <p class="error">Las contraseñas no coinciden.</p> }
 
-          <p class="mensaje" *ngIf="mensaje" role="alert">{{ mensaje }}</p>
           <label class="terminos">
             <ion-checkbox
               name="aceptaTerminos"
               [(ngModel)]="aceptaTerminos"
               required>
             </ion-checkbox>
-            <span>Acepto los <a href="/terminos" target="_blank" rel="noopener">términos y condiciones</a>.</span>
+            <span>Acepto los <a routerLink="/terminos">términos y condiciones</a>.</span>
           </label>
           <ion-button expand="block" type="submit" class="boton-principal">Registrarme</ion-button>
 
@@ -113,11 +112,17 @@
             expand="block"
             type="button"
             fill="outline"
-            class="boton-google"
+            class="boton-google" [disabled]="googlePendiente()"
             (click)="registrarConGoogle()">
-            <span class="google-g" aria-hidden="true">G</span>
+            <span class="google-g" aria-hidden="true"><img src="assets/icon/google-oficial.png" alt=""></span>
             Continuar con Google
           </ion-button>
+          @if (mensaje() || authService.errorGoogleRedireccion(); as aviso) {
+            <p class="mensaje-auth" role="status">{{ aviso }}</p>
+            @if (aviso.includes("no autoriza") && authService.urlGoogleLocal; as url) {
+              <a class="mensaje-auth" [href]="url">Abrir AdoptPoint en localhost</a>
+            }
+          }
         </form>
 
         <p class="pie">¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión</a></p>

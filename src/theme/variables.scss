@@ -1,2 +1,14 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+:root {
+  color-scheme: light;
+  --ion-background-color: #f7efe7;
+  --ion-text-color: #29231f;
+  --naranja-adoptpoint: #FF8800;
+  --titulo-adoptpoint: var(--naranja-adoptpoint);
+  --fondo-encabezado-naranja: var(--naranja-adoptpoint);
+  --fuente-titulo: 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
+}
+
+:where(h1, h2, h3, h4, h5, h6, ion-title) {
+  color: var(--titulo-adoptpoint);
+  font-family: var(--fuente-titulo);
+}

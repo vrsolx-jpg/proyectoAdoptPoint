@@ -1,25 +1,31 @@
-import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { Location } from '@angular/common';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular';
 import { Router } from '@angular/router';
 import { AuthService } from './auth.service';
+import { EsqueletoComponent } from './components/esqueleto/esqueleto.component';
+
 
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
-  imports: [IonApp, IonRouterOutlet],
+  imports: [IonApp, IonRouterOutlet, EsqueletoComponent],
 })
 export class AppComponent implements OnInit, OnDestroy {
   readonly cargando = signal(true);
+  readonly mostrandoEsqueleto = signal(false);
+  readonly vistaEsqueleto = signal<'inicio' | 'perfil' | 'ajustes' | 'lista'>('inicio');
+  private temporizadorEsqueleto?: number;
   private readonly inicioCarga = Date.now();
+  private temporizadorLogo?: number;
   private detenerObservador: (() => void) | undefined;
   private sesionInicializada = false;
   private temporizadorCarga: number | undefined;
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly router: Router
-  ) {}
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly ubicacion = inject(Location);
 
   async ngOnInit(): Promise<void> {
     this.temporizadorCarga = window.setTimeout(() => {
@@ -32,9 +38,9 @@ export class AppComponent implements OnInit, OnDestroy {
         const primeraEmision = !this.sesionInicializada;
         this.sesionInicializada = true;
         try {
-          const debeAbrirInicio = primeraEmision
-            ? !this.router.url.includes('/paginaprincipal')
-            : this.esRutaDeAutenticacion(this.router.url);
+          const url = primeraEmision ? this.ubicacion.path() || this.router.url : this.router.url;
+          const debeAbrirInicio = this.esRutaDeAutenticacion(url)
+            || (primeraEmision && ['/', '/tabs/tab1'].includes(url));
 
           if (usuario && debeAbrirInicio) {
             await this.router.navigate(['/paginaprincipal']);
@@ -47,6 +53,7 @@ export class AppComponent implements OnInit, OnDestroy {
           }
         }
       });
+      void this.authService.completarGoogleRedireccion();
     } catch (error) {
       console.error('No se pudo restaurar la sesión guardada.', error);
       this.finalizarCarga();
@@ -55,21 +62,36 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.detenerObservador?.();
+    window.clearTimeout(this.temporizadorLogo);
+    window.clearTimeout(this.temporizadorEsqueleto);
     if (this.temporizadorCarga !== undefined) {
       window.clearTimeout(this.temporizadorCarga);
     }
   }
 
   private finalizarCarga(): void {
-    if (!this.cargando()) {
-      return;
-    }
-
-    const tiempoRestante = Math.max(0, 2500 - (Date.now() - this.inicioCarga));
-    this.temporizadorCarga = window.setTimeout(() => {
-      this.cargando.set(false);
+    if (this.temporizadorCarga !== undefined) {
+      window.clearTimeout(this.temporizadorCarga);
       this.temporizadorCarga = undefined;
-    }, tiempoRestante);
+    }
+    if (this.temporizadorLogo === undefined && this.cargando()) {
+      const restante = Math.max(0, 1800 - (Date.now() - this.inicioCarga));
+      this.temporizadorLogo = window.setTimeout(() => {
+        const ruta = (this.ubicacion.path() || this.router.url).split('?')[0];
+        const vistas = { '/paginaprincipal': 'inicio', '/perfil': 'perfil', '/ajustes': 'ajustes', '/notificaciones': 'lista' } as const;
+        const vista = vistas[ruta as keyof typeof vistas];
+        if (vista) {
+          this.vistaEsqueleto.set(vista);
+          this.mostrandoEsqueleto.set(true);
+          this.temporizadorEsqueleto = window.setTimeout(() => {
+            this.mostrandoEsqueleto.set(false);
+            this.temporizadorEsqueleto = undefined;
+          }, 300);
+        }
+        this.cargando.set(false);
+        this.temporizadorLogo = undefined;
+      }, restante);
+    }
   }
 
   private esRutaDeAutenticacion(url: string): boolean {

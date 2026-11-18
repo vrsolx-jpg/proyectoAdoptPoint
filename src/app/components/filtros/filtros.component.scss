@@ -1,6 +1,6 @@
 :host {
   display: block;
-  --naranja: #ff8800;
+  --naranja: var(--naranja-adoptpoint);
   --tinta: #29231f;
   --suave: #80756d;
 }
@@ -23,25 +23,11 @@
   margin-bottom: 20px;
 }
 
-.etiqueta-seccion {
-  margin: 0 0 5px;
-  color: #b95e00;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .08em;
-}
-
 h2 {
   margin: 0;
-  color: var(--naranja);
+  color: var(--titulo-adoptpoint);
   font-family: 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
   font-size: 21px;
-}
-
-.ayuda-filtros {
-  margin: 6px 0 0;
-  color: var(--suave);
-  font-size: 13px;
 }
 
 .boton-limpiar {
@@ -69,8 +55,8 @@ h2 {
 }
 
 .campo-filtro label {
-  font-size: 13px;
-  font-weight: 700;
+  color: var(--titulo-adoptpoint);
+  font: 700 14px 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
 }
 
 .campo-filtro select,
@@ -81,11 +67,41 @@ h2 {
   padding: 0 13px;
   border: 1px solid #e8e5de;
   border-radius: 14px;
-  outline-color: var(--naranja);
+  outline-color: var(--titulo-adoptpoint);
   background: #fff;
   color: var(--tinta);
   font: inherit;
   font-size: 13px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.campo-filtro select {
+  appearance: none;
+  padding-right: 38px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--naranja) 50%),
+    linear-gradient(135deg, var(--naranja) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 20px, calc(100% - 12px) 20px;
+  background-repeat: no-repeat;
+  background-size: 5px 5px, 5px 5px;
+}
+
+.campo-filtro select option {
+  padding: 10px;
+  background: #fffaf4;
+  color: var(--tinta);
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+}
+
+.campo-filtro select option:checked {
+  background: #ffd5a8;
+  color: var(--tinta);
+}
+
+.campo-filtro select:focus,
+.campo-filtro input:focus {
+  border-color: var(--titulo-adoptpoint);
+  box-shadow: 0 0 0 3px rgba(255, 136, 0, .16);
 }
 
 .acciones-filtros {
@@ -99,7 +115,7 @@ h2 {
   padding: 0 22px;
   border: 0;
   border-radius: 15px;
-  background: linear-gradient(135deg, #ffae58, var(--naranja));
+  background: var(--naranja-adoptpoint);
   color: #fff;
   font: inherit;
   font-size: 13px;

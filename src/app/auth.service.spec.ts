@@ -6,7 +6,8 @@ const mocks = vi.hoisted(() => ({
   signInWithRedirect: vi.fn()
 }));
 
-vi.mock('firebase/auth', () => ({
+vi.mock('firebase/auth', async (importarOriginal) => ({
+  ...await importarOriginal<typeof import('firebase/auth')>(),
   browserLocalPersistence: {},
   GoogleAuthProvider: class {
     setCustomParameters(): void {}
@@ -15,8 +16,6 @@ vi.mock('firebase/auth', () => ({
   signInWithPopup: mocks.signInWithPopup,
   signInWithRedirect: mocks.signInWithRedirect
 }));
-
-vi.mock('./firebase', () => ({ auth: {} }));
 
 import { AuthService } from './auth.service';
 
@@ -36,15 +35,15 @@ describe('AuthService', () => {
     expect(mocks.signInWithPopup).toHaveBeenCalledOnce();
   });
 
-  it('continúa con redirección si el navegador bloquea el popup', async () => {
+  it('muestra el bloqueo del popup cuando la redirección sería entre dominios', async () => {
     mocks.signInWithPopup.mockRejectedValue(
       Object.assign(new Error('blocked'), { code: 'auth/popup-blocked' })
     );
     const service = new AuthService();
 
-    await service.iniciarConGoogle();
+    await expect(service.iniciarConGoogle()).rejects.toMatchObject({ code: 'auth/popup-blocked' });
 
-    expect(mocks.signInWithRedirect).toHaveBeenCalledOnce();
+    expect(mocks.signInWithRedirect).not.toHaveBeenCalled();
   });
 
   it('propaga otros errores sin iniciar una redirección', async () => {

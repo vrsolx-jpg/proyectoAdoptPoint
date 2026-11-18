@@ -1,11 +1,10 @@
 
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
-import { AuthService } from '../auth.service';
+import { AuthService, mensajeErrorGoogle } from '../auth.service';
 
 import {
   IonContent,
@@ -23,7 +22,6 @@ import {
   styleUrls: ['./registro.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     IonContent,
@@ -43,17 +41,17 @@ export class RegistroPage {
 
   mostrarContrasena = false;
   mostrarConfirmacion = false;
-  mensaje = '';
+  readonly mensaje = signal('');
+  readonly googlePendiente = signal(false);
   aceptaTerminos = false;
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly router: Router
-  ) {
+  readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  constructor() {
     addIcons({ eyeOutline, eyeOffOutline });
   }
 
- 
+
 filtrarNombre(event: CustomEvent) {
   const input = event.target as HTMLIonInputElement;
   const valor = String(event.detail.value ?? '');
@@ -89,35 +87,35 @@ filtrarNombre(event: CustomEvent) {
   }
 
   async registrar(): Promise<void> {
-    this.mensaje = '';
+    this.mensaje.set('');
 
     if (!this.aceptaTerminos) {
-      this.mensaje = 'Debes aceptar los términos y condiciones.';
+      this.mensaje.set('Debes aceptar los términos y condiciones.');
       return;
     }
 
     if (!this.nombre.trim() || !this.correo.trim() || !this.contrasena || !this.confirmacion) {
-      this.mensaje = 'Debes llenar todos los campos.';
+      this.mensaje.set('Debes llenar todos los campos.');
       return;
     }
 
     if (!this.nombreValido()) {
-      this.mensaje = 'Escribe un nombre válido.';
+      this.mensaje.set('Escribe un nombre válido.');
       return;
     }
 
     if (!this.correoValido()) {
-      this.mensaje = 'Escribe un correo válido.';
+      this.mensaje.set('Escribe un correo válido.');
       return;
     }
 
     if (!this.contrasenaValida()) {
-      this.mensaje = 'La contraseña no cumple todos los requisitos.';
+      this.mensaje.set('La contraseña no cumple todos los requisitos.');
       return;
     }
 
     if (this.contrasena !== this.confirmacion) {
-      this.mensaje = 'Las contraseñas no coinciden.';
+      this.mensaje.set('Las contraseñas no coinciden.');
       return;
     }
 
@@ -130,23 +128,25 @@ filtrarNombre(event: CustomEvent) {
       await this.router.navigate(['/paginaprincipal']);
     } catch (error) {
       console.error('Error al registrar usuario.', error);
-      this.mensaje = this.mensajeFirebase(error);
+      this.mensaje.set(this.mensajeFirebase(error));
     }
   }
 
   async registrarConGoogle(): Promise<void> {
-    this.mensaje = '';
+    this.mensaje.set('');
 
     if (!this.aceptaTerminos) {
-      this.mensaje = 'Debes aceptar los términos y condiciones.';
+      this.mensaje.set('Debes aceptar los términos y condiciones.');
       return;
     }
 
+    this.googlePendiente.set(true);
     try {
       await this.authService.iniciarConGoogle();
     } catch (error) {
-      console.error('Error al registrar con Google.', error);
-      this.mensaje = 'No se pudo crear la cuenta con Google.';
+      this.mensaje.set(mensajeErrorGoogle(error));
+    } finally {
+      this.googlePendiente.set(false);
     }
   }
 

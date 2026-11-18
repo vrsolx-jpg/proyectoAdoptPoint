@@ -1,11 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IonContent, IonIcon } from '@ionic/angular';
+import { Camera, MediaResult } from '@capacitor/camera';
+import { Capacitor } from '@capacitor/core';
 import { addIcons } from 'ionicons';
 import {
   arrowBackOutline,
-  addOutline,
   cameraOutline,
   checkmarkOutline,
   closeOutline,
@@ -13,14 +14,18 @@ import {
   homeOutline,
   locationOutline,
   pawOutline,
-  trashOutline
+  imageOutline
 } from 'ionicons/icons';
-import { auth } from '../firebase';
+import { UbicacionService } from '../services/ubicacion.service';
+import { UsuariosService } from '../services/usuarios.service';
+import { comprimirImagen } from '../services/imagenes';
 import {
   CasoPublicacion,
   DatosPublicacion,
   PublicacionesService,
-  RangoEdad
+  RangoEdad,
+  esCelularColombiano,
+  limpiarCelular
 } from '../services/publicaciones.service';
 
 type Respuesta = boolean | null;
@@ -43,17 +48,17 @@ export class PublicarPage {
   private readonly publicacionesService = inject(PublicacionesService);
 
   caso: CasoPublicacion | null = null;
-  fotos: FotoPublicacion[] = [];
-  mensaje = '';
-  mensajeEsExito = false;
-  guardando = false;
-  fotoParaRecortar = '';
-  zoomRecorte = 1;
-  posicionXRecorte = 0;
-  posicionYRecorte = 0;
-  private imagenRecorte: HTMLImageElement | null = null;
-  recorteCargando = false;
+  readonly fotos = signal<FotoPublicacion[]>([]);
+  readonly mensaje = signal('');
+  readonly procesandoFotos = signal(false);
+  readonly guardando = signal(false);
+  private readonly usuarios = inject(UsuariosService);
+  readonly ubicacion = inject(UbicacionService);
 
+  private uidContacto?: string;
+  telefonoEditado = false;
+  ciudadEditada = false;
+  telefono = '';
   nombre = '';
   sinNombre = false;
   raza = '';
@@ -64,7 +69,7 @@ export class PublicarPage {
   sexo = '';
   vacunado: Respuesta = null;
   desparasitado: Respuesta = null;
-  peso = '';
+  peso: number | null = null;
   color = '';
   ciudad = '';
   compatibleNinos: Respuesta = null;
@@ -91,13 +96,29 @@ export class PublicarPage {
     { valor: 'mayor', texto: 'Mayor · 6+ años' }
   ];
   readonly especies = ['Perro', 'Gato', 'Ave', 'Otro'] as const;
-  readonly espaciosFotos = [0, 1, 2];
   private siguienteIdFoto = 0;
 
   constructor() {
+    effect(() => {
+      const uid = this.usuarios.usuario()?.uid;
+      const telefono = this.usuarios.telefono();
+      const ciudad = this.usuarios.ciudad() ?? '';
+      if (uid !== this.uidContacto) {
+        this.uidContacto = uid;
+        this.telefono = '';
+        this.ciudad = '';
+        this.telefonoEditado = false;
+        this.ciudadEditada = false;
+      }
+      if (!this.telefonoEditado) {
+        this.telefono = limpiarCelular(telefono).replace(/^57(?=3\d{9}$)/, '');
+      }
+      if (!this.ciudadEditada) {
+        this.ciudad = ciudad;
+      }
+    });
     addIcons({
       arrowBackOutline,
-      addOutline,
       cameraOutline,
       checkmarkOutline,
       closeOutline,
@@ -105,137 +126,139 @@ export class PublicarPage {
       homeOutline,
       locationOutline,
       pawOutline,
-      trashOutline
+      imageOutline
     });
+  }
+
+  async usarUbicacion(): Promise<void> {
+    try {
+      const ciudad = await this.ubicacion.usarUbicacionActual();
+      this.ciudadEditada = false;
+      this.ciudad = ciudad;
+    } catch {
+      // El mensaje del servicio se presenta junto al campo de ciudad.
+    }
   }
 
   seleccionarCaso(caso: CasoPublicacion): void {
     this.caso = caso;
-    this.mensaje = '';
-    this.mensajeEsExito = false;
+    this.mensaje.set('');
   }
 
-  alternarSinNombre(): void {
-    this.sinNombre = !this.sinNombre;
-    if (this.sinNombre) {
-      this.nombre = '';
+  async seleccionarFotos(evento: Event): Promise<void> {
+    const entrada = evento.target as HTMLInputElement;
+    const archivos = Array.from(entrada.files ?? []);
+    entrada.value = '';
+    await this.procesarFotos(async () => archivos);
+  }
+
+  async abrirGaleria(entrada: HTMLInputElement): Promise<void> {
+    if (!Capacitor.isNativePlatform()) {
+      entrada.click();
+      return;
     }
+    await this.procesarFotos(async () => {
+      const resultado = await Camera.chooseFromGallery({
+        allowMultipleSelection: true, limit: 3 - this.fotos().length, targetWidth: 1440, targetHeight: 1440
+      });
+      return resultado.results.map((foto) => this.origenFoto(foto));
+    });
   }
 
-  async seleccionarFotos(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const archivos = Array.from(input.files || []);
-    input.value = '';
-    this.mensaje = '';
-    this.mensajeEsExito = false;
+  async tomarFoto(): Promise<void> {
+    await this.procesarFotos(async () => [
+      this.origenFoto(await Camera.takePhoto({ targetWidth: 1440, targetHeight: 1440 }))
+    ]);
+  }
 
-    for (const archivo of archivos) {
-      if (this.fotos.length >= 3) {
-        this.mensaje = 'Puedes agregar hasta 3 fotos.';
-        break;
-      }
-
-      if (!archivo.type.startsWith('image/')) {
-        this.mensaje = 'Solo puedes agregar archivos de imagen.';
-        continue;
-      }
-
-      if (archivo.size > 8 * 1024 * 1024) {
-        this.mensaje = 'Cada foto debe pesar menos de 8 MB.';
-        continue;
-      }
-
-      try {
-        await this.abrirEditorRecorte(archivo);
-      } catch (error) {
-        console.error('No se pudo cargar una foto para la publicación.', error);
-        this.mensaje = 'No se pudo procesar una de las fotos seleccionadas.';
-      }
-
+  private origenFoto(foto: MediaResult): string {
+    if (foto.webPath) {
+      return foto.webPath;
     }
+    if (foto.uri) {
+      return Capacitor.convertFileSrc(foto.uri);
+    }
+    throw new Error('La cámara no devolvió una imagen.');
   }
 
-  actualizarZoom(event: Event): void {
-    this.zoomRecorte = Number((event.target as HTMLInputElement).value);
-  }
-
-  actualizarPosicionX(event: Event): void {
-    this.posicionXRecorte = Number((event.target as HTMLInputElement).value);
-  }
-
-  actualizarPosicionY(event: Event): void {
-    this.posicionYRecorte = Number((event.target as HTMLInputElement).value);
-  }
-
-  cancelarRecorte(): void {
-    this.fotoParaRecortar = '';
-    this.imagenRecorte = null;
-    this.recorteCargando = false;
-  }
-
-  async confirmarRecorte(): Promise<void> {
-    if (!this.imagenRecorte) {
+  private async procesarFotos(elegir: () => Promise<(Blob | string)[]>): Promise<void> {
+    if (this.procesandoFotos() || this.guardando() || this.fotos().length >= 3) {
       return;
     }
 
+    this.procesandoFotos.set(true);
+    this.mensaje.set('');
     try {
-      const datos = this.generarRecorte(this.imagenRecorte);
-      this.fotos = [...this.fotos, { id: this.siguienteIdFoto++, datos }];
-      this.fotoParaRecortar = '';
-      this.imagenRecorte = null;
-      this.recorteCargando = false;
+      const origenes = await elegir();
+      for (const origen of origenes) {
+        try {
+          if (this.fotos().length >= 3) {
+            this.mensaje.set('Puedes agregar hasta 3 fotos.');
+            continue;
+          }
+          const datos = await comprimirImagen(origen);
+          this.fotos.update((fotos) => [...fotos, { id: this.siguienteIdFoto++, datos }]);
+        } catch {
+          this.mensaje.set('No se pudo leer una de las fotos. Prueba con una imagen JPG o PNG.');
+        } finally {
+          if (typeof origen === 'string' && origen.startsWith('blob:')) {
+            URL.revokeObjectURL(origen);
+          }
+        }
+      }
     } catch (error) {
-      console.error('No se pudo recortar la foto.', error);
-      this.mensaje = 'No se pudo recortar la foto. Inténtalo nuevamente.';
+      if (!/cancel/i.test(error instanceof Error ? error.message : String(error))) {
+        this.mensaje.set('No se pudo abrir la cámara o la galería. Revisa los permisos e inténtalo de nuevo.');
+      }
+    } finally {
+      this.procesandoFotos.set(false);
     }
   }
 
   quitarFoto(id: number): void {
-    this.fotos = this.fotos.filter((foto) => foto.id !== id);
+    this.fotos.update((fotos) => fotos.filter((foto) => foto.id !== id));
   }
 
   async publicar(): Promise<void> {
-    this.mensaje = '';
-    this.mensajeEsExito = false;
+    this.mensaje.set('');
     const caso = this.caso;
 
-    if (!caso) {
-      this.mensaje = 'Selecciona qué tipo de publicación quieres crear.';
+    if (!caso || this.procesandoFotos() || this.guardando()) {
       return;
     }
 
-    const datos = caso === 'hogar'
-      ? this.validarAnimalDeCasa()
-      : this.validarAnimalEncontrado();
+    const telefono = limpiarCelular(this.telefono);
+    if (!esCelularColombiano(telefono)) {
+      this.mensaje.set('Escribe un celular colombiano de 10 dígitos que empiece por 3.');
+      return;
+    }
 
+    const datos = caso === 'hogar' ? this.validarAnimalDeCasa() : this.validarAnimalEncontrado();
     if (!datos) {
       return;
     }
 
-    const usuario = auth.currentUser;
-    if (!usuario) {
-      this.mensaje = 'Inicia sesión para guardar una publicación.';
+    if (!this.usuarios.usuario()) {
+      this.mensaje.set('Inicia sesión para guardar una publicación.');
       return;
     }
 
-    this.guardando = true;
+    this.guardando.set(true);
     try {
-      this.publicacionesService.crearPublicacion(
-        usuario.uid,
-        caso,
-        datos,
-        this.fotos.map((foto) => foto.datos)
+      await this.publicacionesService.crearPublicacion(
+        caso, { ...datos, telefono }, this.fotos().map((foto) => foto.datos), this.usuarios.nombre()
       );
-      const navegada = await this.router.navigate(['/paginaprincipal']);
-      if (!navegada) {
-        this.mensaje = 'La publicación se guardó, pero no se pudo abrir la página principal.';
-        this.mensajeEsExito = true;
-      }
-    } catch (error) {
-      console.error('No se pudo crear la publicación.', error);
-      this.mensaje = 'No se pudo guardar la publicación. Inténtalo nuevamente.';
+    } catch {
+      this.mensaje.set('No se pudo guardar la publicación. Inténtalo de nuevo.');
+      return;
     } finally {
-      this.guardando = false;
+      this.guardando.set(false);
+    }
+
+    this.caso = null;
+    this.fotos.set([]);
+    if (!await this.router.navigate(['/paginaprincipal'])) {
+      this.mensaje.set('La publicación se guardó. Usa el botón de volver para regresar al inicio.');
     }
   }
 
@@ -243,7 +266,7 @@ export class PublicarPage {
     if (!this.especieCasa || (this.especieCasa === 'Otro' && !this.otraEspecieCasa.trim())
       || (!this.sinNombre && !this.nombre.trim()) || !this.edad || !this.tamanio || !this.sexo
       || !this.descripcion.trim() || !this.ciudad.trim() || this.esterilizado === null) {
-      this.mensaje = 'Completa la especie, nombre (o indica que no tiene), edad, tamaño, sexo, descripción, ciudad y esterilización.';
+      this.mensaje.set('Completa la especie, nombre (o indica que no tiene), edad, tamaño, sexo, descripción, ciudad y esterilización.');
       return null;
     }
 
@@ -259,7 +282,7 @@ export class PublicarPage {
       sexo: this.sexo,
       vacunado: this.vacunado,
       desparasitado: this.desparasitado,
-      peso: this.peso ? Number(this.peso) : null,
+      peso: this.peso === null ? null : Math.max(0, Math.min(this.peso, 100)),
       color: this.color.trim(),
       ciudad: this.ciudad.trim(),
       compatibleNinos: this.compatibleNinos,
@@ -274,8 +297,8 @@ export class PublicarPage {
   private validarAnimalEncontrado(): DatosPublicacion | null {
     if (!this.especieEncontrada || (this.especieEncontrada === 'Otro' && !this.otraEspecie.trim())
       || !this.edadEncontrado || !this.tamanioEncontrado || !this.lugarEncontrado.trim()
-      || !this.fechaEncontrado || !this.descripcionEncontrado.trim()) {
-      this.mensaje = 'Completa el tipo, edad aproximada y tamaño del animal, lugar, fecha y descripción del hallazgo.';
+      || !this.fechaEncontrado || !this.descripcionEncontrado.trim() || !this.ciudad.trim()) {
+      this.mensaje.set('Completa el tipo, edad aproximada y tamaño del animal, lugar, fecha, ciudad y descripción del hallazgo.');
       return null;
     }
 
@@ -285,73 +308,8 @@ export class PublicarPage {
       tamanio: this.tamanioEncontrado,
       lugarEncontrado: this.lugarEncontrado.trim(),
       fechaEncontrado: this.fechaEncontrado,
+      ciudad: this.ciudad.trim(),
       descripcion: this.descripcionEncontrado.trim()
     };
-  }
-
-  private async abrirEditorRecorte(archivo: File): Promise<void> {
-    const origen = await new Promise<string>((resolve, reject) => {
-      const lector = new FileReader();
-      lector.onload = () => {
-        if (typeof lector.result === 'string') {
-          resolve(lector.result);
-        } else {
-          reject(new Error('No se pudo leer la foto.'));
-        }
-      };
-      lector.onerror = () => reject(lector.error || new Error('Error al leer la foto.'));
-      lector.readAsDataURL(archivo);
-    });
-
-    this.fotoParaRecortar = origen;
-    this.imagenRecorte = null;
-    this.recorteCargando = true;
-    this.zoomRecorte = 1;
-    this.posicionXRecorte = 0;
-    this.posicionYRecorte = 0;
-
-    await new Promise<void>((resolve, reject) => {
-      const elemento = new Image();
-      elemento.onload = () => {
-        this.imagenRecorte = elemento;
-        this.recorteCargando = false;
-        resolve();
-      };
-      elemento.onerror = () => {
-        this.cancelarRecorte();
-        reject(new Error('El archivo no contiene una imagen válida.'));
-      };
-      elemento.src = origen;
-    });
-  }
-
-  private generarRecorte(imagen: HTMLImageElement): string {
-    const lado = Math.min(imagen.width, imagen.height) / this.zoomRecorte;
-    const maxX = imagen.width - lado;
-    const maxY = imagen.height - lado;
-    const origenX = (imagen.width - lado) / 2 + (maxX / 2) * (this.posicionXRecorte / 100);
-    const origenY = (imagen.height - lado) / 2 + (maxY / 2) * (this.posicionYRecorte / 100);
-    const escala = Math.min(1, 960 / lado);
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(lado * escala));
-    canvas.height = canvas.width;
-
-    const contexto = canvas.getContext('2d');
-    if (!contexto) {
-      throw new Error('No se pudo preparar la foto.');
-    }
-
-    contexto.drawImage(
-      imagen,
-      origenX,
-      origenY,
-      lado,
-      lado,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-    return canvas.toDataURL('image/jpeg', 0.78);
   }
 }

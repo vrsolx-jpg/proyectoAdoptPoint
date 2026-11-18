@@ -1,0 +1,16 @@
+{
+  "proyecto": "adoptpoint",
+  "appAndroid": "1:629633798601:android:e0efe101e71b9679e51818",
+  "paquete": "io.ionic.starter",
+  "firmasRegistradas": [
+    "57:B6:93:3A:1C:8F:01:A5:8C:BD:92:1D:6F:AE:97:BF:78:B3:D7:DE",
+    "EA:EA:45:96:23:33:64:A1:8C:F4:F6:D0:18:9B:74:61:FE:25:03:87"
+  ],
+  "reglasDesplegadas": true,
+  "clienteWeb": "629633798601-u2e5mdnhub68i0s7u8hqgsrhfpb8jdf8.apps.googleusercontent.com",
+  "oauthAndroidCompleto": true,
+  "clientesAndroid": [
+    "57b6933a1c8f01a58cbd921d6fae97bf78b3d7de",
+    "eaea4596233364a18cf4f6d0189b7461fe250387"
+  ]
+}

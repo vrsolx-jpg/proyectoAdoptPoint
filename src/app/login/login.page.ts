@@ -1,11 +1,10 @@
 
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
-import { AuthService } from '../auth.service';
+import { AuthService, mensajeErrorGoogle } from '../auth.service';
 
 import {
   IonContent,
@@ -23,7 +22,6 @@ import {
   styleUrls: ['./login.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     RouterLink,
     IonContent,
@@ -39,12 +37,14 @@ export class LoginPage {
   correo = '';
   contrasena = '';
   mostrarContrasena = false;
+  readonly enviandoRecuperacion = signal(false);
+  readonly googlePendiente = signal(false);
+  readonly errorGoogle = signal('');
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly router: Router,
-    private readonly toastController: ToastController
-  ) {
+  readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly toastController = inject(ToastController);
+  constructor() {
     addIcons({ eyeOutline, eyeOffOutline });
   }
 
@@ -67,11 +67,40 @@ export class LoginPage {
   }
 
   async iniciarConGoogle(): Promise<void> {
+    this.errorGoogle.set('');
+    this.googlePendiente.set(true);
     try {
       await this.authService.iniciarConGoogle();
     } catch (error) {
       console.error('Error al iniciar sesión con Google.', error);
+      this.errorGoogle.set(mensajeErrorGoogle(error));
       await this.mostrarErrorGoogle(error);
+    } finally {
+      this.googlePendiente.set(false);
+    }
+  }
+
+  async recuperarContrasena(): Promise<void> {
+    const correo = this.correo.trim();
+    if (!correo) {
+      await this.mostrarToast('Escribe tu correo electrónico.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      await this.mostrarToast('Escribe un correo electrónico válido.');
+      return;
+    }
+
+    this.enviandoRecuperacion.set(true);
+    try {
+      await this.authService.enviarRecuperacion(correo);
+      await this.mostrarToast('Te enviamos un enlace para restablecer tu contraseña.');
+    } catch (error) {
+      console.error('Error al recuperar contraseña.', error);
+      await this.mostrarToast('No se pudo enviar el enlace. Inténtalo nuevamente.');
+    } finally {
+      this.enviandoRecuperacion.set(false);
     }
   }
 

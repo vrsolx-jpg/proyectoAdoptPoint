@@ -1,0 +1,18 @@
+<section class="historias" aria-label="Publicaciones recientes">
+  <div class="progreso" aria-hidden="true">
+    @for (segmento of segmentos(); track segmento) {
+      <span [class.visto]="segmento < paso()"></span>
+    }
+  </div>
+  <button class="tarjeta-historia" type="button" (click)="avanzar.emit()"
+    [attr.aria-label]="paso() < total() ? 'Ver la siguiente publicación reciente' : 'Ver catálogo de mascotas'">
+    <img [src]="historia().fotos[0]" [alt]="'Foto de ' + tituloPublicacion(historia())">
+    <span class="etiqueta-historia">
+      <span>{{ tituloPublicacion(historia()) }}</span>
+      <small>{{ historia().datos.especie }}</small>
+    </span>
+    <span class="flecha-historia" aria-hidden="true">→</span>
+  </button>
+  <p class="ayuda-historia">{{ paso() }}/{{ total() }} · {{ paso() < total()
+    ? 'Toca la foto para ver la siguiente mascota' : 'Toca la foto para ver el catálogo' }}</p>
+</section>

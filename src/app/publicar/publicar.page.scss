@@ -1,5 +1,5 @@
 :host {
-  --naranja: #ff8800;
+  --naranja: var(--naranja-adoptpoint);
   --fondo: #fffaf4;
   --tinta: #29231f;
   --suave: #80756d;
@@ -8,7 +8,7 @@
 :host h1,
 :host h2,
 :host h3 {
-  color: var(--naranja);
+  color: var(--titulo-adoptpoint);
   font-family: 'bubbleboddy', 'Arial Rounded MT Bold', sans-serif;
 }
 
@@ -29,79 +29,6 @@
   color: var(--tinta);
 }
 
-.fondo-recorte {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: flex;
-  padding: 20px;
-  background: rgba(41, 35, 31, .52);
-}
-
-.editor-recorte {
-  width: min(100%, 390px);
-  max-height: 92vh;
-  overflow: auto;
-  padding: 20px;
-  border-radius: 24px;
-  background: #fff;
-}
-
-.encabezado-recorte {
-  display: flex;
-  justify-content: space-between;
-}
-
-.cerrar-recorte {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 50%;
-  background: #fff0dc;
-  color: var(--naranja);
-}
-
-.marco-recorte {
-  width: min(100%, 280px);
-  aspect-ratio: 1;
-  margin: 18px auto 10px;
-  overflow: hidden;
-  border-radius: 18px;
-}
-
-.marco-recorte img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-}
-
-.control-recorte {
-  display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
-  align-items: center;
-  margin: 11px 0;
-}
-
-.acciones-recorte {
-  display: flex;
-  margin-top: 20px;
-}
-
-.boton-secundario-recorte,
-.boton-confirmar-recorte {
-  min-height: 42px;
-  flex: 1;
-}
-
-.boton-confirmar-recorte {
-  border: 0;
-  background: var(--naranja);
-  color: #fff;
-}
-
-
 .encabezado-publicar {
   display: grid;
   grid-template-columns: 42px 1fr 42px;
@@ -109,7 +36,7 @@
   margin: 0 -20px 28px;
   padding: max(24px, env(safe-area-inset-top)) 18px 42px;
   border-radius: 0 0 48% 48% / 0 0 14% 14%;
-  background: linear-gradient(135deg, #ffae58, var(--naranja));
+  background: var(--fondo-encabezado-naranja);
 }
 
 .encabezado-publicar h1 {
@@ -345,8 +272,7 @@
   gap: 10px;
 }
 
-.foto-seleccionada,
-.agregar-foto {
+.foto-seleccionada {
   position: relative;
   aspect-ratio: 1;
   overflow: hidden;
@@ -388,33 +314,15 @@
 }
 
 .agregar-foto {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 6px;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 14px;
   background: #fff1df;
-  color: var(--naranja);
-  font: inherit;
-  font-size: 11px;
-  cursor: pointer;
+  color: #8c4c0c;
 }
-
-.agregar-foto ion-icon {
-  font-size: 28px;
-}
-
-.boton-mas-foto {
-  border: 0;
-  background: #fff0dc;
-  color: var(--naranja);
-}
-
-.boton-mas-foto ion-icon {
-  font-size: 32px;
-}
-
 .ayuda-fotos {
   margin: 10px 0 0;
   color: var(--suave);
@@ -427,10 +335,6 @@
   color: #ae3e24;
   font-size: 13px;
   line-height: 1.45;
-}
-
-.mensaje.exito {
-  color: #467247;
 }
 
 .barra-publicar {
@@ -453,9 +357,16 @@
   gap: 9px;
   border: 0;
   border-radius: 28px;
-  background: linear-gradient(135deg, #ffad4d, var(--naranja));
+  background: var(--naranja-adoptpoint);
   color: #fff;
   font: inherit;
   font-size: 16px;
   font-weight: 800;
+}
+
+.acciones-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }

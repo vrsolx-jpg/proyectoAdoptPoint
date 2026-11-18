@@ -1,89 +1,58 @@
-import { Component } from '@angular/core';
-import { IonIcon } from '@ionic/angular';
+import { Component, inject, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { IonIcon, ToastController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import {
-  closeOutline,
-  heartOutline,
-  locationOutline,
-  personCircleOutline
-} from 'ionicons/icons';
-
-interface Mascota {
-  nombre: string;
-  especie: string;
-  edad: string;
-  descripcion: string;
-  imagen: string;
-  alt: string;
-  publicador: string;
-  ubicacion: string;
-  contacto: string;
-}
+import { heart, heartOutline, locationOutline, pawOutline } from 'ionicons/icons';
+import { Publicacion, estadoPublicacion, nombrePublicador, tituloPublicacion } from '../../services/publicaciones.service';
+import { NotificacionesService } from '../../services/notificaciones.service';
+import { UsuariosService } from '../../services/usuarios.service';
 
 @Component({
   selector: 'app-tarjetas-mascotas',
   templateUrl: './tarjetas-mascotas.component.html',
-  styleUrls: ['./tarjetas-mascotas.component.scss'],
-  standalone: true,
-  imports: [IonIcon],
+  styleUrl: './tarjetas-mascotas.component.scss',
+  imports: [IonIcon, RouterLink]
 })
 export class TarjetasMascotasComponent {
-  readonly mascotas: Mascota[] = [
-    {
-      nombre: 'Coco',
-      especie: 'Perro',
-      edad: '2 años',
-      descripcion: 'Compañero cariñoso en busca de un hogar lleno de amor.',
-      imagen: 'assets/img/perro.jpg',
-      alt: 'Coco, perro disponible para adopción',
-      publicador: 'Refugio AdoptPoint',
-      ubicacion: 'Bogotá, Colombia',
-      contacto: 'Contacto disponible próximamente'
-    },
-    {
-      nombre: 'Fili',
-      especie: 'Gato',
-      edad: '1 año',
-      descripcion: 'Tranquilo y juguetón, ideal para una familia cariñosa.',
-      imagen: 'assets/img/fili.jpg',
-      alt: 'Fili, gato disponible para adopción',
-      publicador: 'Fundación Huellitas',
-      ubicacion: 'Bogotá, Colombia',
-      contacto: 'Contacto disponible próximamente'
-    }
-  ];
-
-  mascotaSeleccionada: Mascota | null = null;
-  favoritos = new Set<string>();
+  readonly perfil = inject(UsuariosService);
+  readonly solicitudes = inject(NotificacionesService);
+  private readonly avisos = inject(ToastController);
+  readonly publicaciones = input<Publicacion[]>([]);
+  readonly abrir = output<Publicacion>();
+  readonly tituloPublicacion = tituloPublicacion;
+  readonly estadoPublicacion = estadoPublicacion;
+  readonly nombrePublicador = nombrePublicador;
 
   constructor() {
-    addIcons({
-      closeOutline,
-      heartOutline,
-      locationOutline,
-      personCircleOutline
-    });
+    addIcons({ heart, heartOutline, locationOutline, pawOutline });
   }
 
-  abrirDetalle(mascota: Mascota): void {
-    this.mascotaSeleccionada = mascota;
-  }
-
-  cerrarDetalle(): void {
-    this.mascotaSeleccionada = null;
-  }
-
-  alternarFavorito(mascota: Mascota, event: Event): void {
-    event.stopPropagation();
-    if (this.favoritos.has(mascota.nombre)) {
-      this.favoritos.delete(mascota.nombre);
-    } else {
-      this.favoritos.add(mascota.nombre);
+  async solicitarAdopcion(publicacion: Publicacion): Promise<void> {
+    try {
+      if (await this.solicitudes.crearSolicitudAdopcion(publicacion)) {
+        const aviso = await this.avisos.create({
+          message: 'Solicitud de adopción enviada.', duration: 2600, position: 'middle', cssClass: 'aviso-gps'
+        });
+        await aviso.present();
+      }
+    } catch (error) {
+      const aviso = await this.avisos.create({
+        message: error instanceof Error && !('code' in error) ? error.message : 'No se pudo enviar la solicitud. Inténtalo de nuevo.',
+        duration: 3500, position: 'middle', cssClass: 'aviso-gps'
+      });
+      await aviso.present();
     }
   }
 
-  esFavorita(mascota: Mascota): boolean {
-    return this.favoritos.has(mascota.nombre);
+  async alternarFavorito(id: string): Promise<void> {
+    try {
+      await this.perfil.alternarFavorito(id);
+    } catch {
+      const aviso = await this.avisos.create({
+        message: this.perfil.usuario() ? 'No se pudo actualizar el favorito.' : 'Inicia sesión para guardar mascotas.',
+        duration: 2400, position: 'top'
+      });
+      await aviso.present();
+    }
   }
-
 }
