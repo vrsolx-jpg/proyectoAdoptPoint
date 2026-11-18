@@ -168,3 +168,12 @@ ion-toast.permiso-ubicacion::part(button) { min-height: 48px; margin: 5px 4px 16
   font-family: var(--fuente-titulo);
   line-height: 1.45;
 }
+
+ion-toast.aviso-cerrar-sesion {
+  --width: calc(100% - 48px);
+  --max-width: 330px;
+}
+
+ion-toast.aviso-cerrar-sesion::part(content) { padding: 22px 18px 12px; }
+ion-toast.aviso-cerrar-sesion::part(header) { font-size: 1.15rem; line-height: 1.5; }
+ion-toast.aviso-cerrar-sesion::part(button) { margin: 5px 4px 16px; }

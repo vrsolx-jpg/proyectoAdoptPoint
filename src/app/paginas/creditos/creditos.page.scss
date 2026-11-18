@@ -1,0 +1,16 @@
+.pagina-creditos { --background: #f7efe7; --color: #29231f; }
+.creditos { width: min(100%, 720px); margin: auto; padding: max(20px, env(safe-area-inset-top)) 20px 40px; }
+header { display: flex; align-items: center; gap: 16px; padding: 18px; border: 1px solid #ffe0b8; border-radius: 24px; background: #fff1d7; }
+header > a { display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%; background: #fff; font-size: 22px; }
+h1, h2 { color: #ff8800; font-family: var(--fuente-titulo); }
+h1 { margin: 0; font-size: 1.65rem; }
+.introduccion { margin: 24px 4px; color: #6e5c50; line-height: 1.6; }
+.lista-creditos { display: grid; gap: 12px; }
+.credito { display: flex; gap: 16px; min-width: 0; padding: 18px; border: 1px solid #eee0d3; border-radius: 20px; background: #fffdfa; overflow-wrap: anywhere; }
+.credito img { flex: none; width: 72px; height: 84px; border-radius: 12px; object-fit: cover; }
+.credito h2 { margin: 0 0 6px; font-size: 1.22rem; }
+.credito p { margin: 0 0 8px; line-height: 1.45; }
+a { color: #5b371e; text-underline-offset: 3px; }
+header a { color: #ff8800; }
+.fuente { display: block; margin-top: 10px; font-size: .85rem; }
+a:focus-visible { outline: 3px solid #ff8800; outline-offset: 4px; }

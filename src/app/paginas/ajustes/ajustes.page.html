@@ -1,0 +1,62 @@
+<ion-content class="pagina-ajustes">
+  <main class="ajustes">
+    <header class="encabezado-ajustes">
+      <a routerLink="/perfil" aria-label="Volver a Perfil"><ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon></a>
+      <h1>Ajustes</h1>
+    </header>
+    @if (perfil.cargandoPerfil()) {
+      <app-esqueleto vista="ajustes" etiqueta="Cargando datos de tu cuenta"></app-esqueleto>
+    } @else if (perfil.usuario()) {
+      <section class="panel-ajustes" aria-labelledby="titulo-cuenta">
+        <h2 id="titulo-cuenta">Mi cuenta</h2>
+        <form class="cuenta" (ngSubmit)="guardar()">
+          <label>Usuario <input name="nombre" required maxlength="60" autocomplete="name" [(ngModel)]="borrador().nombre"></label>
+          <label>Correo <input name="correo" type="email" [value]="correo()" readonly autocomplete="email"></label>
+          <label>Ciudad <input name="ciudad" maxlength="80" autocomplete="address-level2" [(ngModel)]="borrador().ciudad"></label>
+          <div class="ancho-completo">
+            <button class="usar-ubicacion" type="button" [disabled]="ubicacion.detectando()" (click)="usarUbicacion()">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              {{ ubicacion.detectando() ? 'Detectando ciudad…' : 'Usar mi ubicación' }}
+            </button>
+            @if (ubicacion.mensaje()) { <p role="status">{{ ubicacion.mensaje() }}</p> }
+          </div>
+          <label>Celular <input name="telefono" type="tel" maxlength="18" autocomplete="tel-national" placeholder="3001234567" [(ngModel)]="borrador().telefono"></label>
+          <label class="ancho-completo">Dirección <input name="direccion" maxlength="160" autocomplete="street-address" [(ngModel)]="borrador().direccion"></label>
+          <button type="submit" class="accion" [disabled]="guardando()">Guardar mis datos</button>
+        </form>
+        @if (mensajePerfil() || perfil.errorPerfil()) {
+          <p class="respuesta" role="status">{{ mensajePerfil() || perfil.errorPerfil() }}</p>
+        }
+      </section>
+      <section class="panel-ajustes" aria-labelledby="titulo-seguridad">
+        <h2 id="titulo-seguridad">Seguridad</h2>
+        @if (cuentaConContrasena()) {
+          <details>
+            <summary>Cambiar contraseña</summary>
+            <form class="seguridad" (ngSubmit)="cambiarContrasena()">
+              <label>Contraseña actual <input name="actual" type="password" required autocomplete="current-password" [(ngModel)]="actual"></label>
+              <label>Nueva contraseña <input name="nueva" type="password" required autocomplete="new-password" [(ngModel)]="nueva"></label>
+              <label>Confirma la nueva contraseña <input name="confirmacion" type="password" required autocomplete="new-password" [(ngModel)]="confirmacion"></label>
+              <p>Entre 8 y 64 caracteres, con mayúscula, minúscula, número y símbolo.</p>
+              <button type="submit" class="accion" [disabled]="cambiando()">Guardar contraseña</button>
+            </form>
+          </details>
+          <button type="button" class="recuperar" [disabled]="enviando()" (click)="recuperarContrasena()">
+            {{ enviando() ? 'Enviando enlace…' : 'Recuperar contraseña por correo' }}
+          </button>
+        } @else {
+          <p>Esta cuenta inicia sesión con Google. Puedes cambiar o recuperar tu contraseña en tu cuenta de Google.</p>
+          <a class="recuperar" href="https://accounts.google.com/signin/recovery" target="_blank" rel="noopener noreferrer">Recuperar mi cuenta de Google</a>
+        }
+        @if (mensajeSeguridad()) {
+          <p class="respuesta" role="status">{{ mensajeSeguridad() }}</p>
+        }
+      </section>
+    } @else {
+      <section class="panel-ajustes"><a class="accion" routerLink="/login">Iniciar sesión</a></section>
+    }
+    <section class="panel-ajustes">
+      <a class="recuperar" routerLink="/creditos-fotos">Créditos de fotos</a>
+    </section>
+  </main>
+</ion-content>

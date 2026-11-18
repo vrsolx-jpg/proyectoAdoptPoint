@@ -2,8 +2,8 @@ import { Location } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { IonApp, IonRouterOutlet } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { AuthService } from './auth.service';
-import { EsqueletoComponent } from './components/esqueleto/esqueleto.component';
+import { AuthService } from './nucleo/servicios/auth.service';
+import { EsqueletoComponent } from './compartido/componentes/esqueleto/esqueleto.component';
 
 
 @Component({

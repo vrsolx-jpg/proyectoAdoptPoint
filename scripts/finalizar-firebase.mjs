@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createRequire } from 'node:module';
 import { existsSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -142,12 +142,14 @@ export async function finalizarFirebase({
     oauthAndroidCompleto: firmas.every((firma) => huellas.has(normalizarFirma(firma))),
     clientesAndroid
   };
-  await writeFile(join(raiz, 'diagnostico-firebase.json'), JSON.stringify(resumen, null, 2) + '\n');
+  const rutaDiagnostico = join(raiz, 'firebase/diagnosticos/diagnostico-firebase.json');
+  await mkdir(dirname(rutaDiagnostico), { recursive: true });
+  await writeFile(rutaDiagnostico, JSON.stringify(resumen, null, 2) + '\n');
   informar('Listo: firmas Android registradas y reglas de Firestore desplegadas en adoptpoint.');
   if (!resumen.oauthAndroidCompleto) {
     informar('Pendiente: Google aún no entrega los clientes OAuth Android de ambas firmas. Revisa Google Cloud > APIs y servicios > Credenciales para el paquete ' + paquete + '.');
   }
-  informar('Diagnóstico guardado en ' + join(raiz, 'diagnostico-firebase.json'));
+  informar('Diagnóstico guardado en ' + rutaDiagnostico);
   return resumen;
 }
 

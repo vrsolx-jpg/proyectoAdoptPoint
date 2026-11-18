@@ -7,5 +7,15 @@
   "typescript.preferences.autoImportFileExcludePatterns": [
     "@ionic/angular/types/ionic-angular-lazy.d.ts",
     "@ionic/angular/types/ionic-angular-common.d.ts"
-  ]
+  ],
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.angular": true,
+    "www": true,
+    "android/.gradle": true,
+    "android/build": true,
+    "android/app/build": true,
+    "ios/App/build": true,
+    "**/*.log": true
+  }
 }

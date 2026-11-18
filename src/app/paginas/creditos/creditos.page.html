@@ -1,0 +1,26 @@
+<ion-content class="pagina-creditos">
+  <main class="creditos">
+    <header>
+      <a routerLink="/ajustes" aria-label="Volver a Ajustes"><ion-icon name="arrow-back-outline" aria-hidden="true"></ion-icon></a>
+      <h1>Créditos de fotos</h1>
+    </header>
+    <p class="introduccion">Autores y licencias de las imágenes del catálogo. Las fotografías se redimensionaron y comprimieron para la aplicación.</p>
+    <section class="lista-creditos" aria-label="Fotografías del catálogo">
+      @for (credito of fotografias; track credito.fuente) {
+        <article class="credito">
+          <img [src]="credito.foto" [alt]="'Fotografía de ' + credito.mascota" loading="lazy">
+          <div>
+            <h2>{{ credito.mascota }}</h2>
+            <p>{{ credito.autor }}</p>
+            @if (credito.enlaceLicencia; as enlace) {
+              <a [href]="enlace" target="_blank" rel="noopener noreferrer">{{ credito.licencia }}</a>
+            } @else {
+              <span>{{ credito.licencia }}</span>
+            }
+            <a class="fuente" [href]="credito.fuente" target="_blank" rel="noopener noreferrer">Ver fotografía original</a>
+          </div>
+        </article>
+      }
+    </section>
+  </main>
+</ion-content>

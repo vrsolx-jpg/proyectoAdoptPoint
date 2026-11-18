@@ -97,7 +97,7 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "buildTarget": "::development",
-            "setupFiles": ["src/test-setup.ts"]
+            "setupFiles": ["src/pruebas/configuracion.ts"]
           },
           "configurations": {
             "ci": {
